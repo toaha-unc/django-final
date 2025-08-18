@@ -1,0 +1,25 @@
+{
+  "builds": [
+    {
+      "src": "freelancer_platform/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/media/(.*)",
+      "dest": "/media/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "freelancer_platform/wsgi.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "."
+  }
+}
