@@ -73,6 +73,9 @@ urlpatterns = [
     path('buyer/toggle-save/', views.toggle_service_save, name='toggle-service-save'),
     path('buyer/activity-timeline/', views.buyer_activity_timeline, name='buyer-activity-timeline'),
     
+    # Test endpoint
+    path('test-simple/', views.test_simple_endpoint, name='test-simple'),
+    
     # Statistics
     path('stats/', views.service_stats, name='service-stats'),
     path('order-stats/', views.order_stats, name='order-stats'),

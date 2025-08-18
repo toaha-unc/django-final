@@ -301,12 +301,14 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if buyer.role != 'buyer':
             raise serializers.ValidationError("Only buyers can place orders")
         
-        # Create order
+        # Create order with minimal fields
         order = Order.objects.create(
+            service=service,
             buyer=buyer,
             seller=service.seller,
             total_amount=service.price,
-            **validated_data
+            requirements=validated_data.get('requirements', ''),
+            special_instructions=validated_data.get('special_instructions', '')
         )
         
         return order
@@ -582,9 +584,36 @@ class ServiceCreateSerializer(serializers.ModelSerializer):
             'requirements', 'features', 'category', 'images'
         ]
     
+    def validate(self, attrs):
+        # Ensure seller is set
+        if not hasattr(self.context['request'].user, 'role') or self.context['request'].user.role != 'seller':
+            raise serializers.ValidationError("Only sellers can create services")
+        
+        # Set default values for optional fields
+        if 'requirements' not in attrs or not attrs['requirements']:
+            attrs['requirements'] = ''
+        if 'features' not in attrs:
+            attrs['features'] = []
+        
+        return attrs
+    
     def create(self, validated_data):
         images_data = validated_data.pop('images', [])
-        service = Service.objects.create(**validated_data)
+        seller = self.context['request'].user
+        
+        # Ensure all required fields are present
+        service_data = {
+            'seller': seller,
+            'title': validated_data.get('title'),
+            'description': validated_data.get('description'),
+            'price': validated_data.get('price'),
+            'delivery_time': validated_data.get('delivery_time'),
+            'category': validated_data.get('category'),
+            'requirements': validated_data.get('requirements', ''),
+            'features': validated_data.get('features', [])
+        }
+        
+        service = Service.objects.create(**service_data)
         
         # Create service images
         for image_data in images_data:

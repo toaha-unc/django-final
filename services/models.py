@@ -227,6 +227,16 @@ class Order(models.Model):
         if not self.total_amount:
             self.total_amount = self.service.price
         
+        # Update status based on timestamps
+        if self.completed_at and self.status != 'completed':
+            self.status = 'completed'
+        elif self.cancelled_at and self.status != 'cancelled':
+            self.status = 'cancelled'
+        elif self.started_at and self.status == 'confirmed':
+            self.status = 'in_progress'
+        elif self.confirmed_at and self.status == 'pending':
+            self.status = 'confirmed'
+        
         super().save(*args, **kwargs)
     
     def get_status_display_name(self):
