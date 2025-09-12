@@ -580,7 +580,8 @@ class SellerServicesManagementView(generics.ListAPIView):
     def get_queryset(self):
         if self.request.user.role != 'seller':
             return Service.objects.none()
-        return Service.objects.filter(seller=self.request.user).select_related('category')
+        # Only show active services for management (soft-deleted services are hidden)
+        return Service.objects.filter(seller=self.request.user, is_active=True).select_related('category')
 
 class SellerOrdersManagementView(generics.ListAPIView):
     """List seller's orders for management"""
