@@ -460,13 +460,14 @@ class ServiceListSerializer(serializers.ModelSerializer):
     seller = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
     primary_image = serializers.SerializerMethodField()
+    orders_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Service
         fields = [
             'id', 'title', 'description', 'price', 'delivery_time',
             'seller', 'category', 'average_rating', 'total_reviews',
-            'primary_image', 'is_featured', 'is_active', 'created_at'
+            'primary_image', 'is_featured', 'is_active', 'created_at', 'orders_count'
         ]
     
     def get_seller(self, obj):
@@ -483,6 +484,9 @@ class ServiceListSerializer(serializers.ModelSerializer):
         if primary_image:
             return ServiceImageSerializer(primary_image).data
         return None
+    
+    def get_orders_count(self, obj):
+        return obj.orders.count()
 
 class ServiceDetailSerializer(serializers.ModelSerializer):
     """Serializer for detailed service information"""
@@ -494,6 +498,7 @@ class ServiceDetailSerializer(serializers.ModelSerializer):
     user_can_review = serializers.SerializerMethodField()
     user_has_reviewed = serializers.SerializerMethodField()
     user_can_order = serializers.SerializerMethodField()
+    orders_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Service
@@ -502,7 +507,7 @@ class ServiceDetailSerializer(serializers.ModelSerializer):
             'requirements', 'features', 'seller', 'category', 'images',
             'average_rating', 'total_reviews', 'review_stats', 'reviews',
             'user_can_review', 'user_has_reviewed', 'user_can_order', 'is_active', 'is_featured',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at', 'orders_count'
         ]
     
     def get_review_stats(self, obj):
@@ -572,6 +577,9 @@ class ServiceDetailSerializer(serializers.ModelSerializer):
             return False
         
         return True
+    
+    def get_orders_count(self, obj):
+        return obj.orders.count()
 
 class ServiceCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating new services"""

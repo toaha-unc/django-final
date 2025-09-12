@@ -37,7 +37,7 @@ class ServiceListView(generics.ListAPIView):
     search_fields = ['title', 'description']
 
     def get_queryset(self):
-        queryset = Service.objects.filter(is_active=True).select_related('seller', 'category')
+        queryset = Service.objects.filter(is_active=True).select_related('seller', 'category').prefetch_related('orders')
 
         category = self.request.query_params.get('category')
         min_price = self.request.query_params.get('min_price')
@@ -90,7 +90,7 @@ class ServiceListView(generics.ListAPIView):
 
 class ServiceDetailView(generics.RetrieveAPIView):
     """Get detailed service information"""
-    queryset = Service.objects.filter(is_active=True).select_related('seller', 'category')
+    queryset = Service.objects.filter(is_active=True).select_related('seller', 'category').prefetch_related('orders')
     serializer_class = ServiceDetailSerializer
     permission_classes = [AllowAny]
     lookup_field = 'id'
@@ -144,7 +144,7 @@ class SellerServicesView(generics.ListAPIView):
         return Service.objects.filter(
             seller_id=seller_id, 
             is_active=True
-        ).select_related('seller', 'category')
+        ).select_related('seller', 'category').prefetch_related('orders')
 
 class ReviewListView(generics.ListAPIView):
     """List reviews for a specific service"""
@@ -583,7 +583,7 @@ class SellerServicesManagementView(generics.ListAPIView):
         if self.request.user.role != 'seller':
             return Service.objects.none()
         # Only show active services for management (soft-deleted services are hidden)
-        return Service.objects.filter(seller=self.request.user, is_active=True).select_related('category')
+        return Service.objects.filter(seller=self.request.user, is_active=True).select_related('category').prefetch_related('orders')
 
 class SellerOrdersManagementView(generics.ListAPIView):
     """List seller's orders for management"""
