@@ -466,7 +466,7 @@ class ServiceListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'price', 'delivery_time',
             'seller', 'category', 'average_rating', 'total_reviews',
-            'primary_image', 'is_featured', 'created_at'
+            'primary_image', 'is_featured', 'is_active', 'created_at'
         ]
     
     def get_seller(self, obj):
