@@ -69,6 +69,7 @@ urlpatterns = [
     path('buyer/order-history/', views.BuyerOrderHistoryView.as_view(), name='buyer-order-history'),
     path('buyer/review-history/', views.BuyerReviewHistoryView.as_view(), name='buyer-review-history'),
     path('buyer/dashboard-stats/', views.buyer_dashboard_stats, name='buyer-dashboard-stats'),
+    path('buyer/dashboard-stats-fresh/', views.buyer_dashboard_stats_fresh, name='buyer-dashboard-stats-fresh'),
     path('buyer/spending-summary/', views.buyer_spending_summary, name='buyer-spending-summary'),
     path('buyer/toggle-save/', views.toggle_service_save, name='toggle-service-save'),
     path('buyer/activity-timeline/', views.buyer_activity_timeline, name='buyer-activity-timeline'),

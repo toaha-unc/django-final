@@ -1051,8 +1051,68 @@ def buyer_dashboard_stats(request):
     try:
         # Get or create analytics
         analytics, created = BuyerAnalytics.objects.get_or_create(buyer=request.user)
-        if created or request.query_params.get('update', False):
+        update_param = request.query_params.get('update', 'false').lower() == 'true'
+        if created or update_param:
             analytics.update_analytics()
+        
+        # Get pending and active orders
+        pending_orders = Order.objects.filter(buyer=request.user, status='pending').count()
+        active_orders = Order.objects.filter(buyer=request.user, status__in=['confirmed', 'in_progress', 'review']).count()
+        
+        # Prepare dashboard stats
+        dashboard_stats = {
+            'total_orders': analytics.total_orders,
+            'completed_orders': analytics.completed_orders,
+            'total_spent': float(analytics.total_spent),
+            'average_order_value': float(analytics.average_order_value),
+            'total_reviews_given': analytics.total_reviews_given,
+            'average_rating_given': float(analytics.average_rating_given),
+            'total_services_saved': analytics.total_services_saved,
+            'orders_this_month': analytics.orders_this_month,
+            'spent_this_month': float(analytics.spent_this_month),
+            'orders_this_year': analytics.orders_this_year,
+            'spent_this_year': float(analytics.spent_this_year),
+            'favorite_categories': analytics.favorite_categories or [],
+            'last_order_date': analytics.last_order_date,
+            'pending_orders': pending_orders,
+            'active_orders': active_orders
+        }
+        
+        return Response(dashboard_stats)
+    except Exception as e:
+        return Response({
+            'error': f'Error loading dashboard stats: {str(e)}',
+            'total_orders': 0,
+            'completed_orders': 0,
+            'total_spent': 0.0,
+            'average_order_value': 0.0,
+            'total_reviews_given': 0,
+            'average_rating_given': 0.0,
+            'total_services_saved': 0,
+            'orders_this_month': 0,
+            'spent_this_month': 0.0,
+            'orders_this_year': 0,
+            'spent_this_year': 0.0,
+            'favorite_categories': [],
+            'last_order_date': None,
+            'recent_orders': [],
+            'recent_reviews': [],
+            'saved_services_count': 0,
+            'pending_orders': 0,
+            'active_orders': 0
+        }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def buyer_dashboard_stats_fresh(request):
+    """Get fresh buyer dashboard statistics - always updates analytics"""
+    if request.user.role != 'buyer':
+        return Response({'error': 'Only buyers can access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        # Always get or create analytics and update them
+        analytics, created = BuyerAnalytics.objects.get_or_create(buyer=request.user)
+        analytics.update_analytics()
         
         # Get recent orders
         recent_orders = Order.objects.filter(buyer=request.user).select_related('service', 'seller').order_by('-placed_at')[:5]
@@ -1081,6 +1141,7 @@ def buyer_dashboard_stats(request):
             'orders_this_year': analytics.orders_this_year,
             'spent_this_year': float(analytics.spent_this_year),
             'favorite_categories': analytics.favorite_categories or [],
+            'last_order_date': analytics.last_order_date,
             'recent_orders': BuyerOrderHistorySerializer(recent_orders, many=True).data,
             'recent_reviews': BuyerReviewHistorySerializer(recent_reviews, many=True).data,
             'saved_services_count': saved_services_count,
@@ -1088,6 +1149,7 @@ def buyer_dashboard_stats(request):
             'active_orders': active_orders
         }
         
+        print(f"Fresh dashboard stats: {dashboard_stats}")
         return Response(dashboard_stats)
     except Exception as e:
         return Response({
@@ -1104,6 +1166,7 @@ def buyer_dashboard_stats(request):
             'orders_this_year': 0,
             'spent_this_year': 0.0,
             'favorite_categories': [],
+            'last_order_date': None,
             'recent_orders': [],
             'recent_reviews': [],
             'saved_services_count': 0,
