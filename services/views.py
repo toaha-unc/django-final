@@ -127,10 +127,12 @@ class ServiceDeleteView(generics.DestroyAPIView):
     def get_queryset(self):
         return Service.objects.filter(seller=self.request.user)
     
-    def perform_destroy(self, instance):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
         # Soft delete - just mark as inactive
         instance.is_active = False
         instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class SellerServicesView(generics.ListAPIView):
     """Get all services by a specific seller"""
@@ -1242,3 +1244,4 @@ def buyer_activity_timeline(request):
     return Response({
         'activities': activities[:20]  # Return last 20 activities
     })
+
