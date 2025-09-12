@@ -416,7 +416,7 @@ def send_verification_email(user):
     
     Please verify your email address by clicking the link below:
     
-    http://localhost:8000/api/auth/verify-email/{user.email_verification_token}/
+    https://django-final.vercel.app/api/auth/verify-email/{user.email_verification_token}/
     
     This link will expire in 24 hours.
     
