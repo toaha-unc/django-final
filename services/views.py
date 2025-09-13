@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.db import transaction
 import hashlib
 import urllib.parse
+import requests
 
 from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences
 from .serializers import (
@@ -1497,7 +1498,6 @@ def initiate_payment(request, order_id):
         
         # Make actual API call to SSLCommerz to get the GatewayPageURL
         try:
-            import requests
             response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
             if response.status_code == 200:
                 sslcommerz_response = response.json()
