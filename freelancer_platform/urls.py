@@ -35,6 +35,10 @@ schema_view = get_schema_view(
    ),
    public=True,
    permission_classes=(permissions.AllowAny,),
+   patterns=[
+       path('api/', include('accounts.urls')),
+       path('api/', include('services.urls')),
+   ],
 )
 
 def redirect_to_swagger(request):
@@ -58,6 +62,7 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.jwt')),
     path('api/', include('accounts.urls')),
     path('api/', include('services.urls')),
+    path('api/schema/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

@@ -193,7 +193,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://localhost:3000",
     "https://127.0.0.1:3000",
-    "https://django-final.vercel.app",
+    "https://django-final-delta.vercel.app",
     "https://react-final.vercel.app",
 ]
 
@@ -269,8 +269,31 @@ SWAGGER_SETTINGS = {
             'in': 'header',
             'description': 'Enter your JWT token in the format: `JWT <your_token>`'
         }
-    }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEEP_LINKING': True,
+    'SHOW_EXTENSIONS': True,
+    'SHOW_COMMON_EXTENSIONS': True,
 }
+
+# Redoc settings
+REDOC_SETTINGS = {
+    'LAZY_RENDERING': False,
+}
+
+# DRF-YASG settings for better UUID handling
+# Note: Using default field inspectors to avoid compatibility issues
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

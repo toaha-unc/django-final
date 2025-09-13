@@ -281,7 +281,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'service', 'requirements', 'special_instructions', 'quantity',
+            'id', 'service', 'requirements', 'special_instructions',
             'total_amount'
         ]
         read_only_fields = ['id']
@@ -305,9 +305,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if buyer.role != 'buyer':
             raise serializers.ValidationError("Only buyers can place orders")
         
-        # Calculate total amount based on quantity
-        quantity = validated_data.get('quantity', 1)
-        total_amount = validated_data.get('total_amount', service.price * quantity)
+        # Calculate total amount (use service price if not provided)
+        total_amount = validated_data.get('total_amount', service.price)
         
         # Create order with basic fields only
         order = Order.objects.create(
@@ -737,8 +736,30 @@ class SavedServiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'saved_at']
     
     def get_service(self, obj):
-        from .serializers import ServiceListSerializer
-        return ServiceListSerializer(obj.service, context=self.context).data
+        # Avoid circular import by using a simple dict representation
+        return {
+            'id': obj.service.id,
+            'title': obj.service.title,
+            'description': obj.service.description,
+            'price': obj.service.price,
+            'delivery_time': obj.service.delivery_time,
+            'average_rating': obj.service.average_rating,
+            'total_reviews': obj.service.total_reviews,
+            'is_featured': obj.service.is_featured,
+            'is_active': obj.service.is_active,
+            'created_at': obj.service.created_at,
+            'category': {
+                'id': obj.service.category.id,
+                'name': obj.service.category.name
+            },
+            'seller': {
+                'id': obj.service.seller.id,
+                'email': obj.service.seller.email,
+                'first_name': obj.service.seller.first_name,
+                'last_name': obj.service.seller.last_name,
+                'role': obj.service.seller.role
+            }
+        }
 
 class SavedServiceCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating saved services"""

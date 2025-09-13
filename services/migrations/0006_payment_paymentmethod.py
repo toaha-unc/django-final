@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounts', '0002_alter_user_managers'),
-        ('services', '0005_buyerprofile_buyeranalytics_buyerpreferences'),
+        ('services', '0005_buyerprofile_buyeranalytics_buyerpreferences_and_more'),
     ]
 
     operations = [
