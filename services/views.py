@@ -7,6 +7,8 @@ from django.db.models import Q, Count, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
+import hashlib
+import urllib.parse
 
 from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences
 from .serializers import (
@@ -1437,8 +1439,6 @@ def initiate_payment(request, order_id):
         payment_uuid = f"uuid_{order.id.hex[:8]}"
         
         # Create SSLCommerz payment URL with proper parameters
-        import hashlib
-        import urllib.parse
         
         # SSLCommerz test credentials
         store_id = 'ts68c1700491a82'
