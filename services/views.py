@@ -339,6 +339,22 @@ class OrderUpdateView(generics.UpdateAPIView):
                 order.cancelled_at = now
             order.save(update_fields=['confirmed_at', 'started_at', 'completed_at', 'cancelled_at'])
 
+            # Create seller earnings record when order is completed
+            if new_status == 'completed':
+                from .models import SellerEarnings
+                from decimal import Decimal
+                
+                # Check if earnings record already exists
+                if not SellerEarnings.objects.filter(seller=order.seller, order=order).exists():
+                    SellerEarnings.objects.create(
+                        seller=order.seller,
+                        order=order,
+                        gross_amount=order.total_amount,
+                        platform_fee=order.total_amount * Decimal('0.10'),  # 10% platform fee
+                        net_amount=order.total_amount * Decimal('0.90')  # 90% to seller
+                    )
+                    print(f"Created earnings record for order {order.order_number}")
+
             # notify buyer about the status change
             notification_data = {
                 'confirmed':  ('Order Confirmed',  f'Your order for "{order.service.title}" has been confirmed by the seller.'),
@@ -873,14 +889,31 @@ def seller_dashboard_stats(request):
         # Get recent reviews
         recent_reviews = Review.objects.filter(seller=request.user).order_by('-created_at')[:5]
         
-        # Get earnings summary
-        earnings_summary = {
-            'total_earnings': float(analytics.total_earnings),
-            'this_month': float(analytics.earnings_this_month),
-            'this_year': float(analytics.earnings_this_year),
-            'pending_payout': float(analytics.pending_earnings),
-            'paid_out': float(analytics.paid_out_earnings)
-        }
+        # Get earnings summary - fallback to direct calculation if no earnings records
+        if analytics.total_earnings == 0:
+            # Calculate revenue directly from completed orders
+            from decimal import Decimal
+            completed_orders = Order.objects.filter(seller=request.user, status='completed')
+            total_revenue = completed_orders.aggregate(total=Sum('total_amount'))['total'] or 0
+            platform_fee_rate = Decimal('0.10')  # 10% platform fee
+            total_platform_fees = total_revenue * platform_fee_rate
+            net_earnings = total_revenue - total_platform_fees
+            
+            earnings_summary = {
+                'total_earnings': float(net_earnings),
+                'this_month': float(analytics.earnings_this_month),
+                'this_year': float(analytics.earnings_this_year),
+                'pending_payout': float(net_earnings),  # All earnings are pending if no records exist
+                'paid_out': 0.0
+            }
+        else:
+            earnings_summary = {
+                'total_earnings': float(analytics.total_earnings),
+                'this_month': float(analytics.earnings_this_month),
+                'this_year': float(analytics.earnings_this_year),
+                'pending_payout': float(analytics.pending_earnings),
+                'paid_out': float(analytics.paid_out_earnings)
+            }
         
         # Get performance metrics
         total_orders = analytics.total_orders or 1

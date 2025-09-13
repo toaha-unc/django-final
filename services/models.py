@@ -482,7 +482,7 @@ class SellerAnalytics(models.Model):
         
         # Financial metrics
         earnings = self.seller.earnings.all()
-        self.total_earnings = earnings.aggregate(total=Sum('gross_amount'))['total'] or 0.00
+        self.total_earnings = earnings.aggregate(total=Sum('net_amount'))['total'] or 0.00
         self.total_platform_fees = earnings.aggregate(total=Sum('platform_fee'))['total'] or 0.00
         self.net_earnings = earnings.aggregate(total=Sum('net_amount'))['total'] or 0.00
         self.paid_out_earnings = earnings.filter(is_paid_out=True).aggregate(total=Sum('net_amount'))['total'] or 0.00
