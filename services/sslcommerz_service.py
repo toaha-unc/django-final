@@ -18,7 +18,7 @@ class SSLCommerzService:
         self.success_url = 'https://react-final.vercel.app/payment-success'
         self.fail_url = 'https://react-final.vercel.app/payment-failed'
         self.cancel_url = 'https://react-final.vercel.app/payment-cancelled'
-        self.ipn_url = 'https://django-final.vercel.app/api/payments/sslcommerz/ipn/'
+        self.ipn_url = 'https://django-final-delta.vercel.app/api/payments/sslcommerz/ipn/'
     
     def generate_hash(self, data):
         """Generate hash for SSLCommerz authentication"""
