@@ -1720,11 +1720,11 @@ def payment_cancelled(request):
         <!DOCTYPE html>
         <html>
         <head>
-            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-cancelled">
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/">
         </head>
         <body>
-            <p>Redirecting to payment cancelled page...</p>
-            <script>window.location.href = 'http://localhost:3000/payment-cancelled';</script>
+            <p>Payment cancelled. Redirecting to homepage...</p>
+            <script>window.location.href = 'http://localhost:3000/';</script>
         </body>
         </html>
         '''
@@ -1736,11 +1736,11 @@ def payment_cancelled(request):
         <!DOCTYPE html>
         <html>
         <head>
-            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-cancelled">
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/">
         </head>
         <body>
-            <p>Redirecting to payment cancelled page...</p>
-            <script>window.location.href = 'http://localhost:3000/payment-cancelled';</script>
+            <p>Payment cancelled. Redirecting to homepage...</p>
+            <script>window.location.href = 'http://localhost:3000/';</script>
         </body>
         </html>
         '''
