@@ -1516,27 +1516,63 @@ def initiate_payment(request, order_id):
         # Debug: Print payment data for troubleshooting
         print(f"SSLCommerz Payment Data: {payment_data}")
         
-        # Use SSLCommerz form submission approach instead of API
-        # This is more reliable and avoids the warning page issue
-        sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
-        gateway_url = sslcommerz_url
-        
-        print(f"Using SSLCommerz form submission approach")
-        print(f"Payment data: {payment_data}")
-        
-        # Ensure all form_data values are strings for JSON serialization
-        # The payment_data already has the correct URLs from the initial setup
-        form_data_serializable = {k: str(v) for k, v in payment_data.items()}
-        
-        result = {
-            'success': True,
-            'redirect_url': gateway_url,
-            'sessionkey': tran_id,
-            'tran_id': tran_id,
-            'form_data': form_data_serializable,
-            'store_id': store_id,
-            'store_password': store_password
-        }
+        # Call SSLCommerz API to get the actual payment page URL
+        try:
+            import requests
+            sslcommerz_url = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+            
+            print(f"Calling SSLCommerz API to get payment page URL")
+            print(f"Payment data being sent: {payment_data}")
+            
+            # Make API call to SSLCommerz
+            response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
+            response.raise_for_status()
+            
+            sslcommerz_response = response.json()
+            print(f"SSLCommerz API response: {sslcommerz_response}")
+            
+            if sslcommerz_response.get('status') == 'SUCCESS':
+                gateway_url = sslcommerz_response.get('GatewayPageURL', '')
+                print(f"SSLCommerz GatewayPageURL: {gateway_url}")
+                
+                if not gateway_url:
+                    raise Exception("No GatewayPageURL received from SSLCommerz")
+                
+                result = {
+                    'success': True,
+                    'redirect_url': gateway_url,
+                    'sessionkey': sslcommerz_response.get('sessionkey', tran_id),
+                    'tran_id': tran_id,
+                    'form_data': {},  # No need for form data since we have the direct URL
+                    'store_id': store_id,
+                    'store_password': store_password
+                }
+            else:
+                error_msg = sslcommerz_response.get('failedreason', 'SSLCommerz API call failed')
+                print(f"SSLCommerz API error: {error_msg}")
+                raise Exception(f"SSLCommerz error: {error_msg}")
+                
+        except Exception as e:
+            print(f"SSLCommerz API call failed: {e}")
+            # Fallback to form submission approach
+            sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+            gateway_url = sslcommerz_url
+            
+            print(f"Falling back to SSLCommerz form submission approach")
+            print(f"Payment data: {payment_data}")
+            
+            # Ensure all form_data values are strings for JSON serialization
+            form_data_serializable = {k: str(v) for k, v in payment_data.items()}
+            
+            result = {
+                'success': True,
+                'redirect_url': gateway_url,
+                'sessionkey': tran_id,
+                'tran_id': tran_id,
+                'form_data': form_data_serializable,
+                'store_id': store_id,
+                'store_password': store_password
+            }
         
         if result['success']:
             response_data = {
