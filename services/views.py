@@ -1459,6 +1459,7 @@ def initiate_payment(request, order_id):
             'fail_url': 'http://localhost:3000/payment-failed',
             'cancel_url': 'http://localhost:3000/payment-cancelled',
             'emi_option': '0',
+            'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
             'cus_email': order.buyer.email,
             'cus_add1': 'N/A',
@@ -1480,7 +1481,6 @@ def initiate_payment(request, order_id):
             'product_name': order.service.title[:50],  # Product name for SSLCommerz
             'product_category': 'Digital Services',  # Product category for SSLCommerz
             'product_profile': 'non-physical-goods',  # Product profile for digital services
-            'multi_card_name': '',  # Force EasyCheckOut flow
             'value_a': str(order.id),
             'value_b': payment_uuid,
             'value_c': order.order_number,
@@ -1505,8 +1505,8 @@ def initiate_payment(request, order_id):
                     print(f"redirectGatewayURL: {sslcommerz_response.get('redirectGatewayURL')}")
                     print(f"GatewayPageURL: {sslcommerz_response.get('GatewayPageURL')}")
                     
-                    # Use redirectGatewayURL for proper payment flow
-                    gateway_url = sslcommerz_response.get('redirectGatewayURL', sslcommerz_response.get('GatewayPageURL', sslcommerz_url))
+                    # Use GatewayPageURL for EasyCheckOut flow
+                    gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_response.get('redirectGatewayURL', sslcommerz_url))
                 else:
                     gateway_url = sslcommerz_url
             else:
