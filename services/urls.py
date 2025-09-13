@@ -73,6 +73,15 @@ urlpatterns = [
     path('buyer/spending-summary/', views.buyer_spending_summary, name='buyer-spending-summary'),
     path('buyer/toggle-save/', views.toggle_service_save, name='toggle-service-save'),
     path('buyer/activity-timeline/', views.buyer_activity_timeline, name='buyer-activity-timeline'),
+    path('buyer/payment-history/', views.BuyerPaymentHistoryView.as_view(), name='buyer-payment-history'),
+    path('buyer/payment-stats/', views.buyer_payment_stats, name='buyer-payment-stats'),
+    
+    # Seller Payment History
+    path('seller/payment-history/', views.SellerPaymentHistoryView.as_view(), name='seller-payment-history'),
+    path('seller/payment-stats/', views.seller_payment_stats, name='seller-payment-stats'),
+    
+    # Invoice Generation
+    path('invoices/<uuid:order_id>/', views.generate_invoice, name='generate-invoice'),
     
     # Test endpoints
     path('test-simple/', views.test_simple_endpoint, name='test-simple'),

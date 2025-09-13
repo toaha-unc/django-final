@@ -905,6 +905,35 @@ class BuyerOrderHistorySerializer(serializers.ModelSerializer):
             'last_name': obj.seller.last_name
         }
 
+class SellerOrderHistorySerializer(serializers.ModelSerializer):
+    """Serializer for seller order history (payment history)"""
+    service = serializers.SerializerMethodField()
+    buyer = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'order_number', 'service', 'buyer', 'status', 'total_amount',
+            'placed_at', 'expected_delivery_date', 'actual_delivery_date',
+            'is_paid', 'payment_method', 'confirmed_at', 'completed_at'
+        ]
+    
+    def get_service(self, obj):
+        return {
+            'id': obj.service.id,
+            'title': obj.service.title,
+            'category': obj.service.category.name,
+            'price': obj.service.price
+        }
+    
+    def get_buyer(self, obj):
+        return {
+            'id': obj.buyer.id,
+            'email': obj.buyer.email,
+            'first_name': obj.buyer.first_name,
+            'last_name': obj.buyer.last_name
+        }
+
 class BuyerReviewHistorySerializer(serializers.ModelSerializer):
     """Serializer for buyer review history"""
     service = serializers.SerializerMethodField()

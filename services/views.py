@@ -23,6 +23,7 @@ from .serializers import (
     BuyerProfileUpdateSerializer, SavedServiceSerializer, SavedServiceCreateSerializer,
     BuyerAnalyticsSerializer, BuyerPreferencesSerializer, BuyerPreferencesUpdateSerializer,
     BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
+    SellerOrderHistorySerializer,
     # PaymentMethodSerializer
 )
 from .sslcommerz_service import SSLCommerzService
@@ -1450,6 +1451,161 @@ def buyer_activity_timeline(request):
     return Response({
         'activities': activities[:20]  # Return last 20 activities
     })
+
+# Payment History Views
+class BuyerPaymentHistoryView(generics.ListAPIView):
+    """Get buyer payment history based on orders"""
+    serializer_class = BuyerOrderHistorySerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['status', 'is_paid', 'payment_method']
+    ordering_fields = ['placed_at', 'total_amount']
+    ordering = ['-placed_at']
+    
+    def get_queryset(self):
+        return Order.objects.filter(
+            buyer=self.request.user,
+            is_paid=True  # Only show paid orders
+        ).select_related('service', 'service__category', 'seller')
+
+class SellerPaymentHistoryView(generics.ListAPIView):
+    """Get seller payment history based on orders"""
+    serializer_class = SellerOrderHistorySerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['status', 'is_paid', 'payment_method']
+    ordering_fields = ['placed_at', 'total_amount']
+    ordering = ['-placed_at']
+    
+    def get_queryset(self):
+        return Order.objects.filter(
+            seller=self.request.user,
+            is_paid=True  # Only show paid orders
+        ).select_related('service', 'service__category', 'buyer')
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def buyer_payment_stats(request):
+    """Get buyer payment statistics"""
+    if request.user.role != 'buyer':
+        return Response({'error': 'Only buyers can access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get paid orders for the buyer
+    paid_orders = Order.objects.filter(buyer=request.user, is_paid=True)
+    
+    total_payments = paid_orders.count()
+    total_amount = paid_orders.aggregate(total=models.Sum('total_amount'))['total'] or 0
+    successful_payments = paid_orders.filter(status__in=['confirmed', 'in_progress', 'review', 'completed']).count()
+    pending_payments = paid_orders.filter(status='pending').count()
+    
+    # Payment method breakdown
+    payment_methods = paid_orders.values('payment_method').annotate(
+        count=models.Count('id'),
+        total=models.Sum('total_amount')
+    ).order_by('-count')
+    
+    return Response({
+        'total_payments': total_payments,
+        'total_amount': float(total_amount),
+        'successful_payments': successful_payments,
+        'pending_payments': pending_payments,
+        'payment_methods': list(payment_methods)
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def seller_payment_stats(request):
+    """Get seller payment statistics"""
+    if request.user.role != 'seller':
+        return Response({'error': 'Only sellers can access this endpoint'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get paid orders for the seller
+    paid_orders = Order.objects.filter(seller=request.user, is_paid=True)
+    
+    total_orders = paid_orders.count()
+    total_earnings = paid_orders.aggregate(total=models.Sum('total_amount'))['total'] or 0
+    
+    # Calculate platform fees and net earnings
+    platform_fee_rate = 0.10  # 10% platform fee
+    total_platform_fees = total_earnings * platform_fee_rate
+    net_earnings = total_earnings - total_platform_fees
+    
+    # Status breakdown
+    status_breakdown = paid_orders.values('status').annotate(
+        count=models.Count('id'),
+        total=models.Sum('total_amount')
+    ).order_by('-count')
+    
+    # Payment method breakdown
+    payment_methods = paid_orders.values('payment_method').annotate(
+        count=models.Count('id'),
+        total=models.Sum('total_amount')
+    ).order_by('-count')
+    
+    return Response({
+        'total_orders': total_orders,
+        'total_earnings': float(total_earnings),
+        'platform_fees': float(total_platform_fees),
+        'net_earnings': float(net_earnings),
+        'status_breakdown': list(status_breakdown),
+        'payment_methods': list(payment_methods)
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def generate_invoice(request, order_id):
+    """Generate invoice for a specific order"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Check if user has permission to view this order
+        if request.user.role == 'buyer' and order.buyer != request.user:
+            return Response({'error': 'You can only generate invoices for your own orders'}, status=status.HTTP_403_FORBIDDEN)
+        elif request.user.role == 'seller' and order.seller != request.user:
+            return Response({'error': 'You can only generate invoices for orders you received'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Generate invoice data
+        invoice_data = {
+            'invoice_number': f"INV-{order.order_number}",
+            'order_number': order.order_number,
+            'invoice_date': timezone.now().strftime('%Y-%m-%d'),
+            'due_date': (timezone.now() + timezone.timedelta(days=30)).strftime('%Y-%m-%d'),
+            'service': {
+                'title': order.service.title,
+                'category': order.service.category.name,
+                'description': order.service.description[:100] + '...' if len(order.service.description) > 100 else order.service.description
+            },
+            'buyer': {
+                'name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
+                'email': order.buyer.email
+            },
+            'seller': {
+                'name': f"{order.seller.first_name} {order.seller.last_name}".strip() or order.seller.email,
+                'email': order.seller.email
+            },
+            'amounts': {
+                'subtotal': float(order.total_amount),
+                'platform_fee': float(order.total_amount * 0.10),
+                'total': float(order.total_amount)
+            },
+            'payment_info': {
+                'method': order.payment_method or 'N/A',
+                'status': 'Paid' if order.is_paid else 'Pending',
+                'paid_at': order.confirmed_at.strftime('%Y-%m-%d %H:%M') if order.confirmed_at else None
+            },
+            'order_info': {
+                'placed_at': order.placed_at.strftime('%Y-%m-%d %H:%M'),
+                'status': order.get_status_display_name(),
+                'requirements': order.requirements[:200] + '...' if len(order.requirements) > 200 else order.requirements
+            }
+        }
+        
+        return Response(invoice_data)
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Payment Views
 # class PaymentListView(generics.ListAPIView):
