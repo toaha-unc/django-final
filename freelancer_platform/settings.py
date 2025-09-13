@@ -13,14 +13,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-default-key-change-in-production')
 
-# Validate required environment variables
-required_env_vars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']
-missing_vars = [var for var in required_env_vars if not config(var, default=None)]
-if missing_vars:
-    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config('DEBUG', default=True, cast=bool)
+
+# Validate required environment variables (only for production)
+if not DEBUG:
+    required_env_vars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT']
+    missing_vars = [var for var in required_env_vars if not config(var, default=None)]
+    if missing_vars:
+        raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 ALLOWED_HOSTS = [".vercel.app", '127.0.0.1', 'localhost']
 
@@ -87,12 +88,12 @@ WSGI_APPLICATION = 'freelancer_platform.wsgi.app'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3' if DEBUG else 'django.db.backends.postgresql',
+        'NAME': BASE_DIR / 'db.sqlite3' if DEBUG else config('DB_NAME'),
+        'USER': '' if DEBUG else config('DB_USER'),
+        'PASSWORD': '' if DEBUG else config('DB_PASSWORD'),
+        'HOST': '' if DEBUG else config('DB_HOST'),
+        'PORT': '' if DEBUG else config('DB_PORT'),
     }
 }
 
