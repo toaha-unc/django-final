@@ -1494,9 +1494,6 @@ def initiate_payment(request, order_id):
         risk_title = request.POST.get('risk_title')
         status = request.POST.get('status')
         
-        # Find payment by transaction ID
-        payment = Payment.objects.filter(sslcommerz_tran_id=tran_id).first()
-        
         if not payment:
             return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
         
