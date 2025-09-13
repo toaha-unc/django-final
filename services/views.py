@@ -1415,13 +1415,17 @@ def initiate_payment(request, order_id):
                 'error': 'Payment already initiated for this order'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create payment record
-        payment = Payment.objects.create(
-            order=order,
-            buyer=request.user,
-            amount=order.total_amount,
-            currency='BDT'
-        )
+        # Create payment record (temporarily disabled due to database schema)
+        # payment = Payment.objects.create(
+        #     order=order,
+        #     buyer=request.user,
+        #     amount=order.total_amount,
+        #     currency='BDT'
+        # )
+        
+        # Mock payment data for testing
+        payment_id = f"pay_{order.id.hex[:8]}"
+        payment_uuid = f"uuid_{order.id.hex[:8]}"
         
         # Initialize SSLCommerz service
         # sslcommerz = SSLCommerzService()
@@ -1438,20 +1442,16 @@ def initiate_payment(request, order_id):
         
         if result['success']:
             return Response({
-                'payment_id': payment.payment_id,
-                'payment_uuid': str(payment.id),
+                'payment_id': payment_id,
+                'payment_uuid': payment_uuid,
                 'redirect_url': result['redirect_url'],
-                'session_key': result['session_key'],
-                'tran_id': result['tran_id'],
-                'amount': float(payment.amount),
-                'currency': payment.currency,
+                'session_key': result['sessionkey'],
+                'tran_id': result['sessionkey'],
+                'amount': float(order.total_amount),
+                'currency': 'BDT',
                 'order_number': order.order_number
             })
         else:
-            payment.status = 'failed'
-            payment.failure_reason = result['error']
-            payment.save()
-            
             return Response({
                 'error': result['error']
             }, status=status.HTTP_400_BAD_REQUEST)
