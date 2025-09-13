@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('services', '0005_buyerprofile_buyeranalytics_buyerpreferences_and_more'),
+        ('services', '0007_order_buyer_fields'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
