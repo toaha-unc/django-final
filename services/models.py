@@ -759,7 +759,7 @@ class BuyerPreferences(models.Model):
     def __str__(self):
         return f"Preferences for {self.buyer.email}"
 
-class Payment(models.Model):
+# class Payment(models.Model):
     """Payment model for SSLCommerz integration"""
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -826,7 +826,7 @@ class Payment(models.Model):
     def can_be_refunded(self):
         return self.status == 'completed'
 
-class PaymentMethod(models.Model):
+# class PaymentMethod(models.Model):
     """Payment method configuration"""
     name = models.CharField(max_length=100)
     gateway = models.CharField(max_length=50)  # sslcommerz, etc.
