@@ -1498,15 +1498,23 @@ def initiate_payment(request, order_id):
         
         # Make actual API call to SSLCommerz to get the GatewayPageURL
         try:
+            print(f"Making SSLCommerz API call to: {sslcommerz_url}")
+            print(f"Payment data: {payment_data}")
             response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
+            print(f"SSLCommerz response status: {response.status_code}")
+            print(f"SSLCommerz response: {response.text}")
+            
             if response.status_code == 200:
                 sslcommerz_response = response.json()
                 if sslcommerz_response.get('status') == 'SUCCESS':
                     gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_url)
+                    print(f"Gateway URL: {gateway_url}")
                 else:
                     gateway_url = sslcommerz_url
+                    print(f"SSLCommerz failed, using fallback URL: {gateway_url}")
             else:
                 gateway_url = sslcommerz_url
+                print(f"HTTP error, using fallback URL: {gateway_url}")
         except Exception as e:
             print(f"SSLCommerz API call failed: {e}")
             gateway_url = sslcommerz_url
