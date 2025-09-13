@@ -1471,13 +1471,12 @@ def initiate_payment(request, order_id):
 #     # Temporarily disabled due to Payment model issues
 #     pass
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
 # def sslcommerz_ipn(request):
-    """SSLCommerz IPN (Instant Payment Notification) handler"""
-    try:
-        # Get payment data from SSLCommerz
-        val_id = request.POST.get('val_id')
+#     """SSLCommerz IPN (Instant Payment Notification) handler"""
+#     # Temporarily disabled due to Payment model issues
+#     pass
         tran_id = request.POST.get('tran_id')
         amount = request.POST.get('amount')
         currency = request.POST.get('currency')
@@ -1554,71 +1553,19 @@ def initiate_payment(request, order_id):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 # def payment_success(request):
-    """Handle successful payment redirect"""
-    val_id = request.GET.get('val_id')
-    tran_id = request.GET.get('tran_id')
-    
-    if val_id and tran_id:
-        try:
-            payment = Payment.objects.get(sslcommerz_tran_id=tran_id, buyer=request.user)
-            
-            # Verify payment with SSLCommerz
-            sslcommerz = SSLCommerzService()
-            verification_result = sslcommerz.verify_payment({
-                'val_id': val_id,
-                'tran_id': tran_id
-            })
-            
-            if verification_result['success']:
-                payment_data = verification_result['payment_data']
-                
-                # Update payment with verified data
-                payment.sslcommerz_val_id = val_id
-                payment.status = 'completed'
-                payment.completed_at = timezone.now()
-                payment.gateway_response = payment_data
-                payment.save()
-                
-                # Update order as paid
-                payment.order.is_paid = True
-                payment.order.payment_method = 'SSLCommerz'
-                payment.order.save()
-                
-                return Response({
-                    'success': True,
-                    'payment_id': payment.payment_id,
-                    'order_number': payment.order.order_number,
-                    'amount': float(payment.amount),
-                    'status': payment.status
-                })
-            else:
-                return Response({
-                    'success': False,
-                    'error': 'Payment verification failed'
-                })
-                
-        except Payment.DoesNotExist:
-            return Response({
-                'success': False,
-                'error': 'Payment not found'
-            })
-    
-    return Response({
-        'success': False,
-        'error': 'Invalid payment parameters'
-    })
+#     """Handle successful payment redirect"""
+#     # Temporarily disabled due to Payment model issues
+#     pass
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 # def payment_failed(request):
-    """Handle failed payment redirect"""
-    return Response({
-        'success': False,
-        'error': 'Payment failed'
-    })
+#     """Handle failed payment redirect"""
+#     # Temporarily disabled due to Payment model issues
+#     pass
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
