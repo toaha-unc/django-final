@@ -493,7 +493,7 @@ class ServiceListSerializer(serializers.ModelSerializer):
         return None
     
     def get_orders_count(self, obj):
-        return obj.orders.filter(status='confirmed').count()
+        return obj.orders.filter(status__in=['confirmed', 'completed']).count()
 
 class ServiceDetailSerializer(serializers.ModelSerializer):
     """Serializer for detailed service information"""
@@ -586,7 +586,7 @@ class ServiceDetailSerializer(serializers.ModelSerializer):
         return True
     
     def get_orders_count(self, obj):
-        return obj.orders.filter(status='confirmed').count()
+        return obj.orders.filter(status__in=['confirmed', 'completed']).count()
 
 class ServiceCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating new services"""
