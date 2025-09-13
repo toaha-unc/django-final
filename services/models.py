@@ -204,13 +204,13 @@ class Order(models.Model):
     buyer_notes = models.TextField(blank=True, help_text="Notes from buyer")
     seller_notes = models.TextField(blank=True, help_text="Notes from seller")
     
-    # Buyer contact and address information
-    buyer_name = models.CharField(max_length=200, blank=True, help_text="Buyer's full name")
-    buyer_phone = models.CharField(max_length=20, blank=True, help_text="Buyer's phone number")
-    buyer_address = models.TextField(blank=True, help_text="Buyer's address")
-    buyer_city = models.CharField(max_length=100, blank=True, help_text="Buyer's city")
-    buyer_country = models.CharField(max_length=100, blank=True, help_text="Buyer's country")
-    buyer_postal_code = models.CharField(max_length=20, blank=True, help_text="Buyer's postal code")
+    # Buyer contact and address information (temporarily disabled for production)
+    # buyer_name = models.CharField(max_length=200, blank=True, help_text="Buyer's full name")
+    # buyer_phone = models.CharField(max_length=20, blank=True, help_text="Buyer's phone number")
+    # buyer_address = models.TextField(blank=True, help_text="Buyer's address")
+    # buyer_city = models.CharField(max_length=100, blank=True, help_text="Buyer's city")
+    # buyer_country = models.CharField(max_length=100, blank=True, help_text="Buyer's country")
+    # buyer_postal_code = models.CharField(max_length=20, blank=True, help_text="Buyer's postal code")
     
     # Payment status (for future payment integration)
     is_paid = models.BooleanField(default=False)
