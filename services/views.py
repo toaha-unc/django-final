@@ -1404,16 +1404,16 @@ def initiate_payment(request, order_id):
                 'error': 'Order is already paid'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if there's already a pending payment
-        existing_payment = Payment.objects.filter(
-            order=order, 
-            status__in=['pending', 'processing']
-        ).first()
+        # Check if there's already a pending payment (temporarily disabled)
+        # existing_payment = Payment.objects.filter(
+        #     order=order, 
+        #     status__in=['pending', 'processing']
+        # ).first()
         
-        if existing_payment:
-            return Response({
-                'error': 'Payment already initiated for this order'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # if existing_payment:
+        #     return Response({
+        #         'error': 'Payment already initiated for this order'
+        #     }, status=status.HTTP_400_BAD_REQUEST)
         
         # Create payment record (temporarily disabled due to database schema)
         # payment = Payment.objects.create(
