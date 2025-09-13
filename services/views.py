@@ -1692,25 +1692,7 @@ def payment_success(request):
                 
                 print(f"Order {order.id} updated to confirmed and paid")
                 
-                # Create notification for seller
-                Notification.objects.create(
-                    recipient=order.seller,
-                    notification_type='order_paid',
-                    title='Order Payment Received',
-                    message=f'Payment received for order #{order.order_number}',
-                    order=order,
-                    service=order.service
-                )
-                
-                # Create notification for buyer
-                Notification.objects.create(
-                    recipient=order.buyer,
-                    notification_type='payment_success',
-                    title='Payment Successful',
-                    message=f'Your payment for order #{order.order_number} has been processed successfully',
-                    order=order,
-                    service=order.service
-                )
+                # Notifications will be created by OrderUpdateView when status changes
                 
             except Order.DoesNotExist:
                 print(f"Order {order_id} not found")
@@ -1784,11 +1766,12 @@ def payment_failed(request):
                 
                 # Create notification for buyer
                 Notification.objects.create(
-                    user=order.buyer,
-                    type='payment_failed',
+                    recipient=order.buyer,
+                    notification_type='payment_failed',
                     title='Payment Failed',
                     message=f'Your payment for order #{order.order_number} has failed',
-                    data={'order_id': str(order.id)}
+                    order=order,
+                    service=order.service
                 )
                 
             except Order.DoesNotExist:
