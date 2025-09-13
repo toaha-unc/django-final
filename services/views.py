@@ -1845,12 +1845,4 @@ def payment_cancelled(request):
 #     # Temporarily disabled due to Payment model issues
 #     pass
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def payment_cancelled(request):
-    """Handle cancelled payment redirect"""
-    return Response({
-        'success': False,
-        'error': 'Payment cancelled'
-    })
 
