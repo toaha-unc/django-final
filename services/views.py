@@ -1495,9 +1495,25 @@ def initiate_payment(request, order_id):
         # Ensure all form_data values are strings for JSON serialization
         form_data_serializable = {k: str(v) for k, v in payment_data.items()}
         
+        # Make actual API call to SSLCommerz to get the GatewayPageURL
+        try:
+            import requests
+            response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
+            if response.status_code == 200:
+                sslcommerz_response = response.json()
+                if sslcommerz_response.get('status') == 'SUCCESS':
+                    gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_url)
+                else:
+                    gateway_url = sslcommerz_url
+            else:
+                gateway_url = sslcommerz_url
+        except Exception as e:
+            print(f"SSLCommerz API call failed: {e}")
+            gateway_url = sslcommerz_url
+        
         result = {
             'success': True,
-            'redirect_url': sslcommerz_url,
+            'redirect_url': gateway_url,
             'sessionkey': tran_id,
             'tran_id': tran_id,
             'form_data': form_data_serializable,
