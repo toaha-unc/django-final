@@ -1442,9 +1442,9 @@ def initiate_payment(request, order_id):
             'total_amount': str(order.total_amount),
             'currency': 'BDT',
             'tran_id': tran_id,
-            'success_url': 'http://localhost:3000/payment-success',
-            'fail_url': 'http://localhost:3000/payment-failed',
-            'cancel_url': 'http://localhost:3000/payment-cancelled',
+            'success_url': 'https://django-final.vercel.app/api/payments/success/',
+            'fail_url': 'https://django-final.vercel.app/api/payments/failed/',
+            'cancel_url': 'https://django-final.vercel.app/api/payments/cancelled/',
             'emi_option': '0',
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
@@ -1544,19 +1544,11 @@ def payment_success(request):
             print(f"Payment success callback data: {request.data}")
             print(f"Payment success callback query params: {request.query_params}")
         
-        # Return success response with redirect URL
-        return Response({
-            'status': 'success',
-            'message': 'Payment successful',
-            'redirect_url': 'http://localhost:3000/payment-success'
-        })
+        # Redirect to frontend success page
+        return redirect('http://localhost:3000/payment-success')
     except Exception as e:
         print(f"Payment success error: {e}")
-        return Response({
-            'status': 'error',
-            'message': str(e),
-            'redirect_url': 'http://localhost:3000/payment-success'
-        })
+        return redirect('http://localhost:3000/payment-success')
 
 
 @api_view(['GET', 'POST'])
@@ -1569,19 +1561,11 @@ def payment_failed(request):
             print(f"Payment failed callback data: {request.data}")
             print(f"Payment failed callback query params: {request.query_params}")
         
-        # Return failed response with redirect URL
-        return Response({
-            'status': 'failed',
-            'message': 'Payment failed',
-            'redirect_url': 'http://localhost:3000/payment-failed'
-        })
+        # Redirect to frontend failed page
+        return redirect('http://localhost:3000/payment-failed')
     except Exception as e:
         print(f"Payment failed error: {e}")
-        return Response({
-            'status': 'error',
-            'message': str(e),
-            'redirect_url': 'http://localhost:3000/payment-failed'
-        })
+        return redirect('http://localhost:3000/payment-failed')
 
 
 @api_view(['GET', 'POST'])
@@ -1594,19 +1578,11 @@ def payment_cancelled(request):
             print(f"Payment cancelled callback data: {request.data}")
             print(f"Payment cancelled callback query params: {request.query_params}")
         
-        # Return cancelled response with redirect URL
-        return Response({
-            'status': 'cancelled',
-            'message': 'Payment cancelled',
-            'redirect_url': 'http://localhost:3000/payment-failed'
-        })
+        # Redirect to frontend cancelled page
+        return redirect('http://localhost:3000/payment-cancelled')
     except Exception as e:
         print(f"Payment cancelled error: {e}")
-        return Response({
-            'status': 'error',
-            'message': str(e),
-            'redirect_url': 'http://localhost:3000/payment-failed'
-        })
+        return redirect('http://localhost:3000/payment-cancelled')
 
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
