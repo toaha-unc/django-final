@@ -1477,6 +1477,7 @@ def initiate_payment(request, order_id):
             'ship_country': 'Bangladesh',
             'shipping_method': 'NO',  # Digital services don't require shipping
             'product_name': order.service.title[:50],  # Product name for SSLCommerz
+            'product_category': 'Digital Services',  # Product category for SSLCommerz
             'value_a': str(order.id),
             'value_b': payment_uuid,
             'value_c': order.order_number,
