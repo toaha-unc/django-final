@@ -1615,10 +1615,52 @@ def payment_success(request):
         print(f"Request POST data: {request.POST}")
         print(f"Request GET data: {request.GET}")
         
+        # Get order ID from SSLCommerz callback data
+        order_id = None
         if request.method == 'POST':
-            # SSLCommerz sends POST data with payment details
-            print(f"Payment success callback data: {request.data}")
-            print(f"Payment success callback query params: {request.query_params}")
+            order_id = request.POST.get('value_a') or request.data.get('value_a')
+        else:
+            order_id = request.GET.get('value_a')
+        
+        print(f"Order ID from callback: {order_id}")
+        
+        if order_id:
+            try:
+                # Find the order and update its status
+                order = Order.objects.get(id=order_id)
+                print(f"Found order: {order.id}, current status: {order.status}")
+                
+                # Update order to confirmed and paid
+                order.status = 'confirmed'
+                order.is_paid = True
+                order.payment_method = 'SSLCommerz'
+                order.paid_at = timezone.now()
+                order.save()
+                
+                print(f"Order {order.id} updated to confirmed and paid")
+                
+                # Create notification for seller
+                Notification.objects.create(
+                    user=order.seller,
+                    type='order_paid',
+                    title='Order Payment Received',
+                    message=f'Payment received for order #{order.order_number}',
+                    data={'order_id': str(order.id)}
+                )
+                
+                # Create notification for buyer
+                Notification.objects.create(
+                    user=order.buyer,
+                    type='payment_success',
+                    title='Payment Successful',
+                    message=f'Your payment for order #{order.order_number} has been processed successfully',
+                    data={'order_id': str(order.id)}
+                )
+                
+            except Order.DoesNotExist:
+                print(f"Order {order_id} not found")
+            except Exception as e:
+                print(f"Error updating order {order_id}: {e}")
         
         # Return HTML redirect instead of Django redirect
         from django.http import HttpResponse
@@ -1658,10 +1700,46 @@ def payment_success(request):
 def payment_failed(request):
     """Handle SSLCommerz payment failed callback"""
     try:
+        print(f"=== PAYMENT FAILED CALLBACK ===")
+        print(f"Request method: {request.method}")
+        print(f"Request data: {request.data}")
+        print(f"Request query params: {request.query_params}")
+        
+        # Get order ID from SSLCommerz callback data
+        order_id = None
         if request.method == 'POST':
-            # SSLCommerz sends POST data with payment details
-            print(f"Payment failed callback data: {request.data}")
-            print(f"Payment failed callback query params: {request.query_params}")
+            order_id = request.POST.get('value_a') or request.data.get('value_a')
+        else:
+            order_id = request.GET.get('value_a')
+        
+        print(f"Order ID from callback: {order_id}")
+        
+        if order_id:
+            try:
+                # Find the order and mark it as cancelled
+                order = Order.objects.get(id=order_id)
+                print(f"Found order: {order.id}, current status: {order.status}")
+                
+                # Update order to cancelled
+                order.status = 'cancelled'
+                order.cancelled_at = timezone.now()
+                order.save()
+                
+                print(f"Order {order.id} marked as cancelled due to payment failure")
+                
+                # Create notification for buyer
+                Notification.objects.create(
+                    user=order.buyer,
+                    type='payment_failed',
+                    title='Payment Failed',
+                    message=f'Your payment for order #{order.order_number} has failed',
+                    data={'order_id': str(order.id)}
+                )
+                
+            except Order.DoesNotExist:
+                print(f"Order {order_id} not found")
+            except Exception as e:
+                print(f"Error updating order {order_id}: {e}")
         
         # Return HTML redirect instead of Django redirect
         from django.http import HttpResponse
@@ -1709,10 +1787,41 @@ def payment_cancelled(request):
         print(f"Request POST data: {request.POST}")
         print(f"Request GET data: {request.GET}")
         
+        # Get order ID from SSLCommerz callback data
+        order_id = None
         if request.method == 'POST':
-            # SSLCommerz sends POST data with payment details
-            print(f"Payment cancelled callback data: {request.data}")
-            print(f"Payment cancelled callback query params: {request.query_params}")
+            order_id = request.POST.get('value_a') or request.data.get('value_a')
+        else:
+            order_id = request.GET.get('value_a')
+        
+        print(f"Order ID from callback: {order_id}")
+        
+        if order_id:
+            try:
+                # Find the order and mark it as cancelled
+                order = Order.objects.get(id=order_id)
+                print(f"Found order: {order.id}, current status: {order.status}")
+                
+                # Update order to cancelled
+                order.status = 'cancelled'
+                order.cancelled_at = timezone.now()
+                order.save()
+                
+                print(f"Order {order.id} marked as cancelled due to payment cancellation")
+                
+                # Create notification for buyer
+                Notification.objects.create(
+                    user=order.buyer,
+                    type='payment_cancelled',
+                    title='Payment Cancelled',
+                    message=f'Your payment for order #{order.order_number} has been cancelled',
+                    data={'order_id': str(order.id)}
+                )
+                
+            except Order.DoesNotExist:
+                print(f"Order {order_id} not found")
+            except Exception as e:
+                print(f"Error updating order {order_id}: {e}")
         
         # Return HTML redirect instead of Django redirect
         from django.http import HttpResponse
