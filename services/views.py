@@ -20,7 +20,7 @@ from .serializers import (
     BuyerProfileUpdateSerializer, SavedServiceSerializer, SavedServiceCreateSerializer,
     BuyerAnalyticsSerializer, BuyerPreferencesSerializer, BuyerPreferencesUpdateSerializer,
     BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
-    PaymentSerializer, PaymentCreateSerializer, PaymentMethodSerializer
+    PaymentMethodSerializer
 )
 # from .sslcommerz_service import SSLCommerzService
 
