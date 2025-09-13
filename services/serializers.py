@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences
+from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences, Payment, PaymentMethod
 from accounts.serializers import UserSerializer
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -280,7 +280,12 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Order
-        fields = ['service', 'requirements', 'special_instructions']
+        fields = [
+            'id', 'service', 'requirements', 'special_instructions', 'quantity',
+            'buyer_name', 'buyer_phone', 'buyer_address', 'buyer_city', 
+            'buyer_country', 'buyer_postal_code', 'total_amount'
+        ]
+        read_only_fields = ['id']
     
     def validate_service(self, value):
         # Check if service is active
@@ -301,14 +306,24 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if buyer.role != 'buyer':
             raise serializers.ValidationError("Only buyers can place orders")
         
-        # Create order with minimal fields
+        # Calculate total amount based on quantity
+        quantity = validated_data.get('quantity', 1)
+        total_amount = validated_data.get('total_amount', service.price * quantity)
+        
+        # Create order with all fields
         order = Order.objects.create(
             service=service,
             buyer=buyer,
             seller=service.seller,
-            total_amount=service.price,
+            total_amount=total_amount,
             requirements=validated_data.get('requirements', ''),
-            special_instructions=validated_data.get('special_instructions', '')
+            special_instructions=validated_data.get('special_instructions', ''),
+            buyer_name=validated_data.get('buyer_name', ''),
+            buyer_phone=validated_data.get('buyer_phone', ''),
+            buyer_address=validated_data.get('buyer_address', ''),
+            buyer_city=validated_data.get('buyer_city', ''),
+            buyer_country=validated_data.get('buyer_country', ''),
+            buyer_postal_code=validated_data.get('buyer_postal_code', '')
         )
         
         return order
@@ -794,6 +809,43 @@ class BuyerPreferencesUpdateSerializer(serializers.ModelSerializer):
             'recommendations', 'marketing_emails', 'profile_visibility',
             'show_order_history', 'show_reviews'
         ]
+
+class PaymentSerializer(serializers.ModelSerializer):
+    """Serializer for Payment model"""
+    order_number = serializers.CharField(source='order.order_number', read_only=True)
+    service_title = serializers.CharField(source='order.service.title', read_only=True)
+    buyer_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Payment
+        fields = [
+            'id', 'payment_id', 'order', 'order_number', 'service_title',
+            'buyer', 'buyer_name', 'amount', 'currency', 'status',
+            'sslcommerz_tran_id', 'sslcommerz_val_id', 'sslcommerz_card_type',
+            'sslcommerz_card_issuer', 'sslcommerz_card_brand',
+            'created_at', 'updated_at', 'completed_at'
+        ]
+        read_only_fields = ['id', 'payment_id', 'created_at', 'updated_at']
+    
+    def get_buyer_name(self, obj):
+        return f"{obj.buyer.first_name} {obj.buyer.last_name}".strip() or obj.buyer.email
+
+class PaymentCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating payments"""
+    class Meta:
+        model = Payment
+        fields = ['order', 'amount', 'currency']
+    
+    def create(self, validated_data):
+        validated_data['buyer'] = self.context['request'].user
+        return super().create(validated_data)
+
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    """Serializer for PaymentMethod model"""
+    class Meta:
+        model = PaymentMethod
+        fields = ['id', 'name', 'gateway', 'is_active', 'configuration', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 class BuyerDashboardStatsSerializer(serializers.Serializer):
     """Serializer for buyer dashboard statistics"""

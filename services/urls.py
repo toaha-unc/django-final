@@ -74,10 +74,22 @@ urlpatterns = [
     path('buyer/toggle-save/', views.toggle_service_save, name='toggle-service-save'),
     path('buyer/activity-timeline/', views.buyer_activity_timeline, name='buyer-activity-timeline'),
     
-    # Test endpoint
+    # Test endpoints
     path('test-simple/', views.test_simple_endpoint, name='test-simple'),
+    path('test-cors/', views.test_cors_endpoint, name='test-cors'),
     
     # Statistics
     path('stats/', views.service_stats, name='service-stats'),
     path('order-stats/', views.order_stats, name='order-stats'),
+    
+    # Payment URLs
+    path('payments/', views.PaymentListView.as_view(), name='payment-list'),
+    path('payments/<uuid:id>/', views.PaymentDetailView.as_view(), name='payment-detail'),
+    path('payments/methods/', views.PaymentMethodListView.as_view(), name='payment-method-list'),
+    path('payments/initiate/<uuid:order_id>/', views.initiate_payment, name='initiate-payment'),
+    path('payments/<uuid:payment_id>/methods/', views.get_sslcommerz_methods, name='sslcommerz-methods'),
+    path('payments/sslcommerz/ipn/', views.sslcommerz_ipn, name='sslcommerz-ipn'),
+    path('payments/success/', views.payment_success, name='payment-success'),
+    path('payments/failed/', views.payment_failed, name='payment-failed'),
+    path('payments/cancelled/', views.payment_cancelled, name='payment-cancelled'),
 ]

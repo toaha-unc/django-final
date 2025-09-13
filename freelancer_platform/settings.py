@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'services.middleware.CORSMiddleware',  # Custom CORS middleware
 ]
 
 ROOT_URLCONF = 'freelancer_platform.urls'
@@ -192,12 +193,40 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:3000",
     "https://127.0.0.1:3000",
     "https://django-final.vercel.app",
+    "https://react-final.vercel.app",
 ]
 
-# Only allow all origins in development
-CORS_ALLOW_ALL_ORIGINS = False  # More secure for production
-
+# Allow all origins for now to fix the issue
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+# Force CORS headers to be added to all responses
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Content-Type', 'Authorization']
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Additional CORS settings for better compatibility
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Djoser settings
 DJOSER = {

@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
 
-from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences
+from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences, Payment, PaymentMethod
 from .serializers import (
     CategorySerializer, ServiceListSerializer, ServiceDetailSerializer,
     ServiceCreateSerializer, ServiceFilterSerializer, ReviewSerializer,
@@ -19,8 +19,10 @@ from .serializers import (
     SellerProfileSerializer, SellerProfileUpdateSerializer, BuyerProfileSerializer,
     BuyerProfileUpdateSerializer, SavedServiceSerializer, SavedServiceCreateSerializer,
     BuyerAnalyticsSerializer, BuyerPreferencesSerializer, BuyerPreferencesUpdateSerializer,
-    BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer
+    BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
+    PaymentSerializer, PaymentCreateSerializer, PaymentMethodSerializer
 )
+from .sslcommerz_service import SSLCommerzService
 
 class CategoryListView(generics.ListAPIView):
     """List all categories"""
@@ -785,6 +787,17 @@ def test_simple_endpoint(request):
     })
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+def test_cors_endpoint(request):
+    """Test endpoint to check CORS configuration"""
+    return Response({
+        'message': 'CORS test endpoint working',
+        'origin': request.META.get('HTTP_ORIGIN', 'No origin header'),
+        'method': request.method,
+        'headers': dict(request.META)
+    })
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def seller_dashboard_stats(request):
     """Get comprehensive seller dashboard statistics"""
@@ -1306,5 +1319,281 @@ def buyer_activity_timeline(request):
     
     return Response({
         'activities': activities[:20]  # Return last 20 activities
+    })
+
+# Payment Views
+class PaymentListView(generics.ListAPIView):
+    """List payments for the current user"""
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['status', 'currency']
+    ordering_fields = ['created_at', 'amount']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
+
+class PaymentDetailView(generics.RetrieveAPIView):
+    """Get detailed payment information"""
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    
+    def get_queryset(self):
+        return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
+
+class PaymentMethodListView(generics.ListAPIView):
+    """List available payment methods"""
+    serializer_class = PaymentMethodSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        return PaymentMethod.objects.filter(is_active=True)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def initiate_payment(request, order_id):
+    """Initiate payment for an order"""
+    try:
+        order = get_object_or_404(Order, id=order_id, buyer=request.user)
+        
+        # Check if order is already paid
+        if order.is_paid:
+            return Response({
+                'error': 'Order is already paid'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if there's already a pending payment
+        existing_payment = Payment.objects.filter(
+            order=order, 
+            status__in=['pending', 'processing']
+        ).first()
+        
+        if existing_payment:
+            return Response({
+                'error': 'Payment already initiated for this order'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create payment record
+        payment = Payment.objects.create(
+            order=order,
+            buyer=request.user,
+            amount=order.total_amount,
+            currency='BDT'
+        )
+        
+        # Initialize SSLCommerz service
+        sslcommerz = SSLCommerzService()
+        
+        # Create payment session
+        result = sslcommerz.create_session(order, payment)
+        
+        if result['success']:
+            return Response({
+                'payment_id': payment.payment_id,
+                'payment_uuid': str(payment.id),
+                'redirect_url': result['redirect_url'],
+                'session_key': result['session_key'],
+                'tran_id': result['tran_id'],
+                'amount': float(payment.amount),
+                'currency': payment.currency,
+                'order_number': order.order_number
+            })
+        else:
+            payment.status = 'failed'
+            payment.failure_reason = result['error']
+            payment.save()
+            
+            return Response({
+                'error': result['error']
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_sslcommerz_methods(request, payment_id):
+    """Get SSLCommerz payment methods"""
+    try:
+        payment = get_object_or_404(Payment, id=payment_id, buyer=request.user)
+        
+        # Initialize SSLCommerz service
+        sslcommerz = SSLCommerzService()
+        
+        # Get payment methods
+        methods = sslcommerz.get_payment_methods()
+        
+        return Response({
+            'payment_methods': methods,
+            'payment_id': payment.payment_id,
+            'amount': float(payment.amount),
+            'currency': payment.currency
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def sslcommerz_ipn(request):
+    """SSLCommerz IPN (Instant Payment Notification) handler"""
+    try:
+        # Get payment data from SSLCommerz
+        val_id = request.POST.get('val_id')
+        tran_id = request.POST.get('tran_id')
+        amount = request.POST.get('amount')
+        currency = request.POST.get('currency')
+        card_type = request.POST.get('card_type')
+        card_no = request.POST.get('card_no')
+        card_issuer = request.POST.get('card_issuer')
+        card_brand = request.POST.get('card_brand')
+        card_issuer_country = request.POST.get('card_issuer_country')
+        card_issuer_country_code = request.POST.get('card_issuer_country_code')
+        currency_type = request.POST.get('currency_type')
+        currency_amount = request.POST.get('currency_amount')
+        currency_rate = request.POST.get('currency_rate')
+        base_fair = request.POST.get('base_fair')
+        discount_amount = request.POST.get('discount_amount')
+        risk_level = request.POST.get('risk_level')
+        risk_title = request.POST.get('risk_title')
+        status = request.POST.get('status')
+        
+        # Find payment by transaction ID
+        payment = Payment.objects.filter(sslcommerz_tran_id=tran_id).first()
+        
+        if not payment:
+            return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Update payment with SSLCommerz data
+        payment.sslcommerz_val_id = val_id
+        payment.sslcommerz_card_type = card_type
+        payment.sslcommerz_card_no = card_no
+        payment.sslcommerz_card_issuer = card_issuer
+        payment.sslcommerz_card_brand = card_brand
+        payment.sslcommerz_card_issuer_country = card_issuer_country
+        payment.sslcommerz_card_issuer_country_code = card_issuer_country_code
+        payment.sslcommerz_currency_type = currency_type
+        payment.sslcommerz_currency_amount = Decimal(currency_amount) if currency_amount else None
+        payment.sslcommerz_currency_rate = Decimal(currency_rate) if currency_rate else None
+        payment.sslcommerz_base_fair = Decimal(base_fair) if base_fair else None
+        payment.sslcommerz_discount_amount = Decimal(discount_amount) if discount_amount else None
+        payment.sslcommerz_risk_level = risk_level
+        payment.sslcommerz_risk_title = risk_title
+        payment.gateway_response = dict(request.POST)
+        
+        # Update payment status
+        if status == 'VALID':
+            payment.status = 'completed'
+            payment.completed_at = timezone.now()
+            
+            # Update order as paid
+            payment.order.is_paid = True
+            payment.order.payment_method = 'SSLCommerz'
+            payment.order.save()
+            
+            # Create seller earnings record
+            SellerEarnings.objects.create(
+                seller=payment.order.seller,
+                order=payment.order,
+                gross_amount=payment.order.total_amount,
+                platform_fee=payment.order.total_amount * Decimal('0.10'),  # 10% platform fee
+                net_amount=payment.order.total_amount * Decimal('0.90')
+            )
+            
+        elif status == 'FAILED':
+            payment.status = 'failed'
+            payment.failure_reason = 'Payment failed'
+        else:
+            payment.status = 'cancelled'
+            payment.failure_reason = 'Payment cancelled'
+        
+        payment.save()
+        
+        return Response({'status': 'success'})
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def payment_success(request):
+    """Handle successful payment redirect"""
+    val_id = request.GET.get('val_id')
+    tran_id = request.GET.get('tran_id')
+    
+    if val_id and tran_id:
+        try:
+            payment = Payment.objects.get(sslcommerz_tran_id=tran_id, buyer=request.user)
+            
+            # Verify payment with SSLCommerz
+            sslcommerz = SSLCommerzService()
+            verification_result = sslcommerz.verify_payment({
+                'val_id': val_id,
+                'tran_id': tran_id
+            })
+            
+            if verification_result['success']:
+                payment_data = verification_result['payment_data']
+                
+                # Update payment with verified data
+                payment.sslcommerz_val_id = val_id
+                payment.status = 'completed'
+                payment.completed_at = timezone.now()
+                payment.gateway_response = payment_data
+                payment.save()
+                
+                # Update order as paid
+                payment.order.is_paid = True
+                payment.order.payment_method = 'SSLCommerz'
+                payment.order.save()
+                
+                return Response({
+                    'success': True,
+                    'payment_id': payment.payment_id,
+                    'order_number': payment.order.order_number,
+                    'amount': float(payment.amount),
+                    'status': payment.status
+                })
+            else:
+                return Response({
+                    'success': False,
+                    'error': 'Payment verification failed'
+                })
+                
+        except Payment.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Payment not found'
+            })
+    
+    return Response({
+        'success': False,
+        'error': 'Invalid payment parameters'
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def payment_failed(request):
+    """Handle failed payment redirect"""
+    return Response({
+        'success': False,
+        'error': 'Payment failed'
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def payment_cancelled(request):
+    """Handle cancelled payment redirect"""
+    return Response({
+        'success': False,
+        'error': 'Payment cancelled'
     })
 
