@@ -1477,7 +1477,6 @@ def initiate_payment(request, order_id):
 #     """SSLCommerz IPN (Instant Payment Notification) handler"""
 #     # Temporarily disabled due to Payment model issues
 #     pass
-        tran_id = request.POST.get('tran_id')
         amount = request.POST.get('amount')
         currency = request.POST.get('currency')
         card_type = request.POST.get('card_type')
