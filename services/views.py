@@ -1488,15 +1488,15 @@ def initiate_payment(request, order_id):
         # Create SSLCommerz payment URL
         sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
         
-        # Create form data for POST request
-        form_data = urllib.parse.urlencode(payment_data)
+        # Ensure all form_data values are strings for JSON serialization
+        form_data_serializable = {k: str(v) for k, v in payment_data.items()}
         
         result = {
             'success': True,
             'redirect_url': sslcommerz_url,
             'sessionkey': tran_id,
             'tran_id': tran_id,
-            'form_data': payment_data,
+            'form_data': form_data_serializable,
             'store_id': store_id,
             'store_password': store_password
         }
