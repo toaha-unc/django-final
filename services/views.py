@@ -1544,11 +1544,37 @@ def payment_success(request):
             print(f"Payment success callback data: {request.data}")
             print(f"Payment success callback query params: {request.query_params}")
         
-        # Redirect to frontend success page
-        return redirect('http://localhost:3000/payment-success')
+        # Return HTML redirect instead of Django redirect
+        from django.http import HttpResponse
+        html_content = '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-success">
+        </head>
+        <body>
+            <p>Redirecting to payment success page...</p>
+            <script>window.location.href = 'http://localhost:3000/payment-success';</script>
+        </body>
+        </html>
+        '''
+        return HttpResponse(html_content, content_type='text/html')
     except Exception as e:
         print(f"Payment success error: {e}")
-        return redirect('http://localhost:3000/payment-success')
+        from django.http import HttpResponse
+        html_content = '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-success">
+        </head>
+        <body>
+            <p>Redirecting to payment success page...</p>
+            <script>window.location.href = 'http://localhost:3000/payment-success';</script>
+        </body>
+        </html>
+        '''
+        return HttpResponse(html_content, content_type='text/html')
 
 
 @api_view(['GET', 'POST'])
@@ -1561,11 +1587,37 @@ def payment_failed(request):
             print(f"Payment failed callback data: {request.data}")
             print(f"Payment failed callback query params: {request.query_params}")
         
-        # Redirect to frontend failed page
-        return redirect('http://localhost:3000/payment-failed')
+        # Return HTML redirect instead of Django redirect
+        from django.http import HttpResponse
+        html_content = '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-failed">
+        </head>
+        <body>
+            <p>Redirecting to payment failed page...</p>
+            <script>window.location.href = 'http://localhost:3000/payment-failed';</script>
+        </body>
+        </html>
+        '''
+        return HttpResponse(html_content, content_type='text/html')
     except Exception as e:
         print(f"Payment failed error: {e}")
-        return redirect('http://localhost:3000/payment-failed')
+        from django.http import HttpResponse
+        html_content = '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-failed">
+        </head>
+        <body>
+            <p>Redirecting to payment failed page...</p>
+            <script>window.location.href = 'http://localhost:3000/payment-failed';</script>
+        </body>
+        </html>
+        '''
+        return HttpResponse(html_content, content_type='text/html')
 
 
 @api_view(['GET', 'POST'])
@@ -1578,11 +1630,37 @@ def payment_cancelled(request):
             print(f"Payment cancelled callback data: {request.data}")
             print(f"Payment cancelled callback query params: {request.query_params}")
         
-        # Redirect to frontend cancelled page
-        return redirect('http://localhost:3000/payment-cancelled')
+        # Return HTML redirect instead of Django redirect
+        from django.http import HttpResponse
+        html_content = '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-cancelled">
+        </head>
+        <body>
+            <p>Redirecting to payment cancelled page...</p>
+            <script>window.location.href = 'http://localhost:3000/payment-cancelled';</script>
+        </body>
+        </html>
+        '''
+        return HttpResponse(html_content, content_type='text/html')
     except Exception as e:
         print(f"Payment cancelled error: {e}")
-        return redirect('http://localhost:3000/payment-cancelled')
+        from django.http import HttpResponse
+        html_content = '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-cancelled">
+        </head>
+        <body>
+            <p>Redirecting to payment cancelled page...</p>
+            <script>window.location.href = 'http://localhost:3000/payment-cancelled';</script>
+        </body>
+        </html>
+        '''
+        return HttpResponse(html_content, content_type='text/html')
 
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
