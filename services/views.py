@@ -805,6 +805,25 @@ def test_minimal_endpoint(request):
         'timestamp': '2025-09-13T04:45:00Z'
     })
 
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def test_redirect_endpoint(request):
+    """Test redirect endpoint"""
+    from django.http import HttpResponse
+    html_content = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="refresh" content="0; url=http://localhost:3000/payment-cancelled">
+    </head>
+    <body>
+        <p>Test redirect to payment cancelled page...</p>
+        <script>window.location.href = 'http://localhost:3000/payment-cancelled';</script>
+    </body>
+    </html>
+    '''
+    return HttpResponse(html_content, content_type='text/html')
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def test_order_creation(request):

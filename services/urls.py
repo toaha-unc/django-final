@@ -78,6 +78,7 @@ urlpatterns = [
     path('test-simple/', views.test_simple_endpoint, name='test-simple'),
     path('test-minimal/', views.test_minimal_endpoint, name='test-minimal'),
     path('test-cors/', views.test_cors_endpoint, name='test-cors'),
+    path('test-redirect/', views.test_redirect_endpoint, name='test-redirect'),
     path('test-order/', views.test_order_creation, name='test-order'),
     
     # Statistics
