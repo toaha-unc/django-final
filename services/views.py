@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
 
-from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences, Payment, PaymentMethod
+from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences, PaymentMethod
 from .serializers import (
     CategorySerializer, ServiceListSerializer, ServiceDetailSerializer,
     ServiceCreateSerializer, ServiceFilterSerializer, ReviewSerializer,
@@ -1362,26 +1362,26 @@ def buyer_activity_timeline(request):
     })
 
 # Payment Views
-class PaymentListView(generics.ListAPIView):
-    """List payments for the current user"""
-    serializer_class = PaymentSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['status', 'currency']
-    ordering_fields = ['created_at', 'amount']
-    ordering = ['-created_at']
-    
-    def get_queryset(self):
-        return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
+# class PaymentListView(generics.ListAPIView):
+#     """List payments for the current user"""
+#     serializer_class = PaymentSerializer
+#     permission_classes = [IsAuthenticated]
+#     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+#     filterset_fields = ['status', 'currency']
+#     ordering_fields = ['created_at', 'amount']
+#     ordering = ['-created_at']
+#     
+#     def get_queryset(self):
+#         return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
 
-class PaymentDetailView(generics.RetrieveAPIView):
-    """Get detailed payment information"""
-    serializer_class = PaymentSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-    
-    def get_queryset(self):
-        return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
+# class PaymentDetailView(generics.RetrieveAPIView):
+#     """Get detailed payment information"""
+#     serializer_class = PaymentSerializer
+#     permission_classes = [IsAuthenticated]
+#     lookup_field = 'id'
+#     
+#     def get_queryset(self):
+#         return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
 
 class PaymentMethodListView(generics.ListAPIView):
     """List available payment methods"""
