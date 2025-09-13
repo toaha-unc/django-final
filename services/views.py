@@ -777,19 +777,6 @@ def generate_recommendations(request):
 
 # Seller Dashboard API Views
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def test_simple_endpoint(request):
-    """Simple test endpoint to check if authentication is working"""
-    return Response({
-        'message': 'Simple endpoint working',
-        'user': {
-            'id': str(request.user.id),
-            'email': request.user.email,
-            'role': request.user.role
-        }
-    })
-
-@api_view(['GET'])
 @permission_classes([AllowAny])
 def test_cors_endpoint(request):
     """Test endpoint to check CORS configuration"""
