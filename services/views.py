@@ -22,7 +22,7 @@ from .serializers import (
     BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
     PaymentSerializer, PaymentCreateSerializer, PaymentMethodSerializer
 )
-from .sslcommerz_service import SSLCommerzService
+# from .sslcommerz_service import SSLCommerzService
 
 class CategoryListView(generics.ListAPIView):
     """List all categories"""
@@ -1384,10 +1384,17 @@ def initiate_payment(request, order_id):
         )
         
         # Initialize SSLCommerz service
-        sslcommerz = SSLCommerzService()
+        # sslcommerz = SSLCommerzService()
         
         # Create payment session
-        result = sslcommerz.create_session(order, payment)
+        # result = sslcommerz.create_session(order, payment)
+        
+        # Temporary mock result for testing
+        result = {
+            'success': True,
+            'redirect_url': f'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?sessionkey=test_session_{order.id}',
+            'sessionkey': f'test_session_{order.id}'
+        }
         
         if result['success']:
             return Response({
