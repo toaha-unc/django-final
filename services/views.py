@@ -1471,10 +1471,10 @@ def initiate_payment(request, order_id):
             'total_amount': str(order.total_amount),
             'currency': 'BDT',
             'tran_id': tran_id,
-            'success_url': 'https://django-final.vercel.app/api/test-redirect/',
-            'fail_url': 'https://django-final.vercel.app/api/test-redirect/',
-            'cancel_url': 'https://django-final.vercel.app/api/test-redirect/',
-            'ipn_url': 'https://django-final.vercel.app/api/test-redirect/',  # Required IPN URL
+            'success_url': 'https://django-final.vercel.app/api/payments/success/',
+            'fail_url': 'https://django-final.vercel.app/api/payments/failed/',
+            'cancel_url': 'https://django-final.vercel.app/api/payments/cancelled/',
+            'ipn_url': 'https://django-final.vercel.app/api/payments/success/',  # Required IPN URL
             'emi_option': '0',
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
@@ -1607,6 +1607,14 @@ def initiate_payment(request, order_id):
 def payment_success(request):
     """Handle SSLCommerz payment success callback"""
     try:
+        print(f"=== PAYMENT SUCCESS CALLBACK ===")
+        print(f"Request method: {request.method}")
+        print(f"Request URL: {request.build_absolute_uri()}")
+        print(f"Request data: {request.data}")
+        print(f"Request query params: {request.query_params}")
+        print(f"Request POST data: {request.POST}")
+        print(f"Request GET data: {request.GET}")
+        
         if request.method == 'POST':
             # SSLCommerz sends POST data with payment details
             print(f"Payment success callback data: {request.data}")
@@ -1693,6 +1701,14 @@ def payment_failed(request):
 def payment_cancelled(request):
     """Handle SSLCommerz payment cancelled callback"""
     try:
+        print(f"=== PAYMENT CANCELLED CALLBACK ===")
+        print(f"Request method: {request.method}")
+        print(f"Request URL: {request.build_absolute_uri()}")
+        print(f"Request data: {request.data}")
+        print(f"Request query params: {request.query_params}")
+        print(f"Request POST data: {request.POST}")
+        print(f"Request GET data: {request.GET}")
+        
         if request.method == 'POST':
             # SSLCommerz sends POST data with payment details
             print(f"Payment cancelled callback data: {request.data}")
