@@ -1454,6 +1454,16 @@ def initiate_payment(request, order_id):
         # Generate transaction ID
         tran_id = f"TXN_{order.id.hex[:8].upper()}_{int(timezone.now().timestamp())}"
         
+        # Get customer data from user profile or use sensible defaults
+        def get_customer_data(field_name, default_value='Not provided'):
+            """Get customer data from user profile or return default"""
+            try:
+                if hasattr(order.buyer, 'profile') and order.buyer.profile:
+                    return getattr(order.buyer.profile, field_name, '') or default_value
+                return default_value
+            except:
+                return default_value
+        
         # Prepare payment data
         payment_data = {
             'store_id': store_id,
@@ -1469,21 +1479,21 @@ def initiate_payment(request, order_id):
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
             'cus_email': order.buyer.email,
-            'cus_add1': 'Dhaka',  # Use proper city instead of N/A
-            'cus_add2': 'Bangladesh',
-            'cus_city': 'Dhaka',
-            'cus_state': 'Dhaka',
-            'cus_postcode': '1000',
-            'cus_country': 'Bangladesh',
-            'cus_phone': '01700000000',  # Use proper phone format
+            'cus_add1': get_customer_data('address', 'Not provided'),
+            'cus_add2': '',
+            'cus_city': 'Not provided',  # UserProfile doesn't have city field
+            'cus_state': 'Not provided',  # UserProfile doesn't have state field
+            'cus_postcode': '0000',  # UserProfile doesn't have postal_code field
+            'cus_country': 'Bangladesh',  # Default country for SSLCommerz
+            'cus_phone': get_customer_data('phone_number', 'Not provided'),
             'cus_fax': '',
             'ship_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
-            'ship_add1': 'Dhaka',
-            'ship_add2': 'Bangladesh',
-            'ship_city': 'Dhaka',
-            'ship_state': 'Dhaka',
-            'ship_postcode': '1000',
-            'ship_country': 'Bangladesh',
+            'ship_add1': get_customer_data('address', 'Not provided'),
+            'ship_add2': '',
+            'ship_city': 'Not provided',  # UserProfile doesn't have city field
+            'ship_state': 'Not provided',  # UserProfile doesn't have state field
+            'ship_postcode': '0000',  # UserProfile doesn't have postal_code field
+            'ship_country': 'Bangladesh',  # Default country for SSLCommerz
             'shipping_method': 'NO',  # Digital services don't require shipping
             'product_name': order.service.title[:50],  # Product name for SSLCommerz
             'product_category': 'Digital Services',  # Product category for SSLCommerz
