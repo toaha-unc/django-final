@@ -1746,6 +1746,25 @@ def payment_cancelled(request):
         '''
         return HttpResponse(html_content, content_type='text/html')
 
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def test_payment_cancelled(request):
+    """Test payment cancelled endpoint"""
+    from django.http import HttpResponse
+    html_content = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="refresh" content="0; url=http://localhost:3000/">
+    </head>
+    <body>
+        <p>Test payment cancelled. Redirecting to homepage...</p>
+        <script>window.location.href = 'http://localhost:3000/';</script>
+    </body>
+    </html>
+    '''
+    return HttpResponse(html_content, content_type='text/html')
+
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 # def get_sslcommerz_methods(request, payment_id):

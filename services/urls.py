@@ -95,4 +95,5 @@ urlpatterns = [
     path('payments/success/', views.payment_success, name='payment-success'),
     path('payments/failed/', views.payment_failed, name='payment-failed'),
     path('payments/cancelled/', views.payment_cancelled, name='payment-cancelled'),
+    path('test-payment-cancelled/', views.test_payment_cancelled, name='test-payment-cancelled'),
 ]
