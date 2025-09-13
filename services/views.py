@@ -806,6 +806,15 @@ def test_simple_endpoint(request):
         'status': 'ok'
     })
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def test_minimal_endpoint(request):
+    """Minimal test endpoint with no dependencies"""
+    return Response({
+        'message': 'Minimal test successful',
+        'timestamp': '2025-09-13T04:45:00Z'
+    })
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def test_order_creation(request):
