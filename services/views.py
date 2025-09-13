@@ -1539,7 +1539,7 @@ def initiate_payment(request, order_id):
         }
         
         if result['success']:
-            return Response({
+            response_data = {
                 'payment_id': payment_id,
                 'payment_uuid': payment_uuid,
                 'redirect_url': result['redirect_url'],
@@ -1549,7 +1549,12 @@ def initiate_payment(request, order_id):
                 'currency': 'BDT',
                 'order_number': order.order_number,
                 'form_data': result['form_data']
-            })
+            }
+            print(f"Payment initiation response data: {response_data}")
+            print(f"Response keys: {list(response_data.keys())}")
+            print(f"Has redirect_url: {'redirect_url' in response_data}")
+            print(f"Has form_data: {'form_data' in response_data}")
+            return Response(response_data)
         else:
             return Response({
                 'error': result['error']
