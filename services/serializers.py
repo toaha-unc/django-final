@@ -401,7 +401,7 @@ class SellerEarningsSerializer(serializers.ModelSerializer):
             'id': obj.order.id,
             'order_number': obj.order.order_number,
             'service_title': obj.order.service.title,
-            'buyer_name': f"{obj.order.buyer.first_name} {obj.order.buyer.last_name}",
+            'buyer_name': f"{obj.order.buyer.first_name or ''} {obj.order.buyer.last_name or ''}".strip() or obj.order.buyer.email,
             'status': obj.order.status,
             'placed_at': obj.order.placed_at
         }
@@ -807,21 +807,16 @@ class PaymentSerializer(serializers.ModelSerializer):
     """Serializer for Payment model"""
     order_number = serializers.CharField(source='order.order_number', read_only=True)
     service_title = serializers.CharField(source='order.service.title', read_only=True)
-    buyer_name = serializers.SerializerMethodField()
-    
     class Meta:
         model = Payment
         fields = [
             'id', 'payment_id', 'order', 'order_number', 'service_title',
-            'buyer', 'buyer_name', 'amount', 'currency', 'status',
+            'buyer', 'amount', 'currency', 'status',
             'sslcommerz_tran_id', 'sslcommerz_val_id', 'sslcommerz_card_type',
             'sslcommerz_card_issuer', 'sslcommerz_card_brand',
             'created_at', 'updated_at', 'completed_at'
         ]
         read_only_fields = ['id', 'payment_id', 'created_at', 'updated_at']
-    
-    def get_buyer_name(self, obj):
-        return f"{obj.buyer.first_name} {obj.buyer.last_name}".strip() or obj.buyer.email
 
 class PaymentCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating payments"""
