@@ -935,6 +935,10 @@ def seller_dashboard_stats(request):
                 'paid_out': float(analytics.paid_out_earnings)
             }
         
+        # Get order status counts
+        pending_orders = Order.objects.filter(seller=request.user, status='pending').count()
+        in_progress_orders = Order.objects.filter(seller=request.user, status='in_progress').count()
+        
         # Get performance metrics
         total_orders = analytics.total_orders or 1
         completion_rate = (analytics.completed_orders / total_orders) * 100 if total_orders > 0 else 0
@@ -947,8 +951,13 @@ def seller_dashboard_stats(request):
             'on_time_delivery': 95.0  # Default, can be calculated from orders
         }
         
+        # Add order status counts to analytics data
+        analytics_data = SellerAnalyticsSerializer(analytics).data
+        analytics_data['pending_orders'] = pending_orders
+        analytics_data['in_progress_orders'] = in_progress_orders
+        
         return Response({
-            'analytics': SellerAnalyticsSerializer(analytics).data,
+            'analytics': analytics_data,
             'recent_orders': OrderSerializer(recent_orders, many=True).data,
             'recent_reviews': ReviewSerializer(recent_reviews, many=True).data,
             'earnings_summary': earnings_summary,
@@ -957,7 +966,10 @@ def seller_dashboard_stats(request):
     except Exception as e:
         return Response({
             'error': f'Error loading dashboard stats: {str(e)}',
-            'analytics': {},
+            'analytics': {
+                'pending_orders': 0,
+                'in_progress_orders': 0
+            },
             'recent_orders': [],
             'recent_reviews': [],
             'earnings_summary': {
