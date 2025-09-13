@@ -282,8 +282,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'service', 'requirements', 'special_instructions', 'quantity',
-            'buyer_name', 'buyer_phone', 'buyer_address', 'buyer_city', 
-            'buyer_country', 'buyer_postal_code', 'total_amount'
+            'total_amount'
         ]
         read_only_fields = ['id']
     
@@ -310,7 +309,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         quantity = validated_data.get('quantity', 1)
         total_amount = validated_data.get('total_amount', service.price * quantity)
         
-        # Create order with basic fields first
+        # Create order with basic fields only
         order = Order.objects.create(
             service=service,
             buyer=buyer,
@@ -319,20 +318,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             requirements=validated_data.get('requirements', ''),
             special_instructions=validated_data.get('special_instructions', '')
         )
-        
-        # Try to update with buyer fields if they exist in the database
-        try:
-            order.buyer_name = validated_data.get('buyer_name', '')
-            order.buyer_phone = validated_data.get('buyer_phone', '')
-            order.buyer_address = validated_data.get('buyer_address', '')
-            order.buyer_city = validated_data.get('buyer_city', '')
-            order.buyer_country = validated_data.get('buyer_country', '')
-            order.buyer_postal_code = validated_data.get('buyer_postal_code', '')
-            order.save(update_fields=['buyer_name', 'buyer_phone', 'buyer_address', 'buyer_city', 'buyer_country', 'buyer_postal_code'])
-        except Exception as e:
-            # If buyer fields don't exist in database yet, just log and continue
-            print(f"Buyer fields not available in database: {e}")
-            pass
         
         return order
 
