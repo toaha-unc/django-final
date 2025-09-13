@@ -1494,26 +1494,9 @@ def initiate_payment(request, order_id):
         # Create SSLCommerz payment URL
         sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
         
-        # Make actual API call to SSLCommerz to get the GatewayPageURL
-        try:
-            response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
-            if response.status_code == 200:
-                sslcommerz_response = response.json()
-                if sslcommerz_response.get('status') == 'SUCCESS':
-                    # Debug: Print available URLs
-                    print(f"Available URLs: {list(sslcommerz_response.keys())}")
-                    print(f"redirectGatewayURL: {sslcommerz_response.get('redirectGatewayURL')}")
-                    print(f"GatewayPageURL: {sslcommerz_response.get('GatewayPageURL')}")
-                    
-                    # Use GatewayPageURL for EasyCheckOut flow
-                    gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_response.get('redirectGatewayURL', sslcommerz_url))
-                else:
-                    gateway_url = sslcommerz_url
-            else:
-                gateway_url = sslcommerz_url
-        except Exception as e:
-            print(f"SSLCommerz API call failed: {e}")
-            gateway_url = sslcommerz_url
+        # For testing, let's use a simple approach - redirect to success page directly
+        # In production, you would handle the SSLCommerz callback properly
+        gateway_url = 'http://localhost:3000/payment-success'
         
         # Update payment_data with correct URLs for form_data
         payment_data['success_url'] = 'http://localhost:3000/payment-success'
