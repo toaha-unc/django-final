@@ -1442,9 +1442,9 @@ def initiate_payment(request, order_id):
             'total_amount': str(order.total_amount),
             'currency': 'BDT',
             'tran_id': tran_id,
-            'success_url': 'https://django-final.vercel.app/api/payments/success/',
-            'fail_url': 'https://django-final.vercel.app/api/payments/failed/',
-            'cancel_url': 'https://django-final.vercel.app/api/payments/cancelled/',
+            'success_url': 'http://localhost:3000/payment-success',
+            'fail_url': 'http://localhost:3000/payment-failed',
+            'cancel_url': 'http://localhost:3000/payment-cancelled',
             'emi_option': '0',
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
@@ -1498,9 +1498,9 @@ def initiate_payment(request, order_id):
             gateway_url = sslcommerz_url
         
         # Update payment_data with correct URLs for form_data (after SSLCommerz API call)
-        payment_data['success_url'] = 'https://django-final.vercel.app/api/payments/success/'
-        payment_data['fail_url'] = 'https://django-final.vercel.app/api/payments/failed/'
-        payment_data['cancel_url'] = 'https://django-final.vercel.app/api/payments/cancelled/'
+        payment_data['success_url'] = 'http://localhost:3000/payment-success'
+        payment_data['fail_url'] = 'http://localhost:3000/payment-failed'
+        payment_data['cancel_url'] = 'http://localhost:3000/payment-cancelled'
         
         # Ensure all form_data values are strings for JSON serialization
         form_data_serializable = {k: str(v) for k, v in payment_data.items()}
