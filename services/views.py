@@ -1436,11 +1436,13 @@ def initiate_payment(request, order_id):
         payment_id = f"pay_{order.id.hex[:8]}"
         payment_uuid = f"uuid_{order.id.hex[:8]}"
         
-        # Use mock data for now (SSLCommerz API causing server errors)
+        # Use mock SSLCommerz data for testing
         result = {
             'success': True,
             'redirect_url': f'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?sessionkey=test_session_{order.id}',
-            'sessionkey': f'test_session_{order.id}'
+            'sessionkey': f'test_session_{order.id}',
+            'store_id': 'ts68c1700491a82',
+            'store_password': 'ts68c1700491a82@ssl'
         }
         
         if result['success']:
