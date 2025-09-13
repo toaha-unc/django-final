@@ -288,6 +288,26 @@ class OrderCreateView(generics.CreateAPIView):
                 special_instructions=special_instructions
             )
             
+            # Create notification for seller about new order
+            Notification.objects.create(
+                recipient=service.seller,
+                notification_type='order_placed',
+                title='New Order Received',
+                message=f'You have received a new order for "{service.title}" from {request.user.get_full_name() or request.user.email}.',
+                order=order,
+                service=service
+            )
+            
+            # Create notification for buyer about order placement
+            Notification.objects.create(
+                recipient=request.user,
+                notification_type='order_placed',
+                title='Order Placed Successfully',
+                message=f'Your order for "{service.title}" has been placed successfully.',
+                order=order,
+                service=service
+            )
+            
             return Response({
                 'id': str(order.id),
                 'service': str(order.service.id),
@@ -1674,20 +1694,22 @@ def payment_success(request):
                 
                 # Create notification for seller
                 Notification.objects.create(
-                    user=order.seller,
-                    type='order_paid',
+                    recipient=order.seller,
+                    notification_type='order_paid',
                     title='Order Payment Received',
                     message=f'Payment received for order #{order.order_number}',
-                    data={'order_id': str(order.id)}
+                    order=order,
+                    service=order.service
                 )
                 
                 # Create notification for buyer
                 Notification.objects.create(
-                    user=order.buyer,
-                    type='payment_success',
+                    recipient=order.buyer,
+                    notification_type='payment_success',
                     title='Payment Successful',
                     message=f'Your payment for order #{order.order_number} has been processed successfully',
-                    data={'order_id': str(order.id)}
+                    order=order,
+                    service=order.service
                 )
                 
             except Order.DoesNotExist:
