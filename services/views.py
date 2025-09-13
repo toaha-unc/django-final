@@ -1510,7 +1510,7 @@ def initiate_payment(request, order_id):
             print(f"SSLCommerz API call failed: {e}")
             gateway_url = sslcommerz_url
         
-        # Update payment_data with correct URLs for form_data
+        # Update payment_data with correct URLs for form_data (after SSLCommerz API call)
         payment_data['success_url'] = 'https://django-final.vercel.app/api/payments/success/'
         payment_data['fail_url'] = 'https://django-final.vercel.app/api/payments/failed/'
         payment_data['cancel_url'] = 'https://django-final.vercel.app/api/payments/cancelled/'
