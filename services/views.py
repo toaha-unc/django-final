@@ -1464,23 +1464,24 @@ def initiate_payment(request, order_id):
             'success_url': 'https://django-final.vercel.app/api/test-redirect/',
             'fail_url': 'https://django-final.vercel.app/api/test-redirect/',
             'cancel_url': 'https://django-final.vercel.app/api/test-redirect/',
+            'ipn_url': 'https://django-final.vercel.app/api/test-redirect/',  # Required IPN URL
             'emi_option': '0',
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
             'cus_email': order.buyer.email,
-            'cus_add1': 'N/A',
-            'cus_add2': 'N/A',
-            'cus_city': 'N/A',
-            'cus_state': 'N/A',
+            'cus_add1': 'Dhaka',  # Use proper city instead of N/A
+            'cus_add2': 'Bangladesh',
+            'cus_city': 'Dhaka',
+            'cus_state': 'Dhaka',
             'cus_postcode': '1000',
             'cus_country': 'Bangladesh',
-            'cus_phone': 'N/A',
+            'cus_phone': '01700000000',  # Use proper phone format
             'cus_fax': '',
             'ship_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
-            'ship_add1': 'N/A',
-            'ship_add2': 'N/A',
-            'ship_city': 'N/A',
-            'ship_state': 'N/A',
+            'ship_add1': 'Dhaka',
+            'ship_add2': 'Bangladesh',
+            'ship_city': 'Dhaka',
+            'ship_state': 'Dhaka',
             'ship_postcode': '1000',
             'ship_country': 'Bangladesh',
             'shipping_method': 'NO',  # Digital services don't require shipping
@@ -1491,11 +1492,19 @@ def initiate_payment(request, order_id):
             'value_b': payment_uuid,
             'value_c': order.order_number,
             'value_d': order.service.title[:50],
+            'opt_a': '',  # Optional parameter A
+            'opt_b': '',  # Optional parameter B
+            'opt_c': '',  # Optional parameter C
+            'opt_d': '',  # Optional parameter D
         }
         
         # Generate hash for SSLCommerz authentication
+        # SSLCommerz hash format: store_password + tran_id + total_amount + currency
         hash_string = f"{store_password}{tran_id}{order.total_amount}BDT"
         payment_data['hash'] = hashlib.sha512(hash_string.encode()).hexdigest()
+        
+        # Debug: Print payment data for troubleshooting
+        print(f"SSLCommerz Payment Data: {payment_data}")
         
         # Create SSLCommerz payment URL
         sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
