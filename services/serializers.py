@@ -803,30 +803,30 @@ class BuyerPreferencesUpdateSerializer(serializers.ModelSerializer):
             'show_order_history', 'show_reviews'
         ]
 
-class PaymentSerializer(serializers.ModelSerializer):
-    """Serializer for Payment model"""
-    order_number = serializers.CharField(source='order.order_number', read_only=True)
-    service_title = serializers.CharField(source='order.service.title', read_only=True)
-    class Meta:
-        model = Payment
-        fields = [
-            'id', 'payment_id', 'order', 'order_number', 'service_title',
-            'buyer', 'amount', 'currency', 'status',
-            'sslcommerz_tran_id', 'sslcommerz_val_id', 'sslcommerz_card_type',
-            'sslcommerz_card_issuer', 'sslcommerz_card_brand',
-            'created_at', 'updated_at', 'completed_at'
-        ]
-        read_only_fields = ['id', 'payment_id', 'created_at', 'updated_at']
+# class PaymentSerializer(serializers.ModelSerializer):
+#     """Serializer for Payment model"""
+#     order_number = serializers.CharField(source='order.order_number', read_only=True)
+#     service_title = serializers.CharField(source='order.service.title', read_only=True)
+#     class Meta:
+#         model = Payment
+#         fields = [
+#             'id', 'payment_id', 'order', 'order_number', 'service_title',
+#             'buyer', 'amount', 'currency', 'status',
+#             'sslcommerz_tran_id', 'sslcommerz_val_id', 'sslcommerz_card_type',
+#             'sslcommerz_card_issuer', 'sslcommerz_card_brand',
+#             'created_at', 'updated_at', 'completed_at'
+#         ]
+#         read_only_fields = ['id', 'payment_id', 'created_at', 'updated_at']
 
-class PaymentCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating payments"""
-    class Meta:
-        model = Payment
-        fields = ['order', 'amount', 'currency']
-    
-    def create(self, validated_data):
-        validated_data['buyer'] = self.context['request'].user
-        return super().create(validated_data)
+# class PaymentCreateSerializer(serializers.ModelSerializer):
+#     """Serializer for creating payments"""
+#     class Meta:
+#         model = Payment
+#         fields = ['order', 'amount', 'currency']
+#     
+#     def create(self, validated_data):
+#         validated_data['buyer'] = self.context['request'].user
+#         return super().create(validated_data)
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
     """Serializer for PaymentMethod model"""
