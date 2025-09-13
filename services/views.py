@@ -1436,27 +1436,70 @@ def initiate_payment(request, order_id):
         payment_id = f"pay_{order.id.hex[:8]}"
         payment_uuid = f"uuid_{order.id.hex[:8]}"
         
-        # Initialize SSLCommerz service with real API call
-        try:
-            sslcommerz = SSLCommerzService()
-            
-            # Create payment session with real SSLCommerz API
-            result = sslcommerz.create_session(order, {
-                'payment_id': payment_id,
-                'payment_uuid': payment_uuid,
-                'amount': float(order.total_amount),
-                'currency': 'BDT'
-            })
-        except Exception as e:
-            # Fallback to mock data if SSLCommerz fails
-            result = {
-                'success': True,
-                'redirect_url': f'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?sessionkey=test_session_{order.id}',
-                'sessionkey': f'test_session_{order.id}',
-                'store_id': 'ts68c1700491a82',
-                'store_password': 'ts68c1700491a82@ssl',
-                'error': f'SSLCommerz error: {str(e)}'
-            }
+        # Create SSLCommerz payment URL with proper parameters
+        import hashlib
+        import urllib.parse
+        
+        # SSLCommerz test credentials
+        store_id = 'ts68c1700491a82'
+        store_password = 'ts68c1700491a82@ssl'
+        
+        # Generate transaction ID
+        tran_id = f"TXN_{order.id.hex[:8].upper()}_{int(timezone.now().timestamp())}"
+        
+        # Prepare payment data
+        payment_data = {
+            'store_id': store_id,
+            'store_passwd': store_password,
+            'total_amount': str(order.total_amount),
+            'currency': 'BDT',
+            'tran_id': tran_id,
+            'success_url': 'https://react-final.vercel.app/payment-success',
+            'fail_url': 'https://react-final.vercel.app/payment-failed',
+            'cancel_url': 'https://react-final.vercel.app/payment-cancelled',
+            'emi_option': '0',
+            'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
+            'cus_email': order.buyer.email,
+            'cus_add1': 'N/A',
+            'cus_add2': 'N/A',
+            'cus_city': 'N/A',
+            'cus_state': 'N/A',
+            'cus_postcode': '1000',
+            'cus_country': 'Bangladesh',
+            'cus_phone': 'N/A',
+            'cus_fax': '',
+            'ship_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
+            'ship_add1': 'N/A',
+            'ship_add2': 'N/A',
+            'ship_city': 'N/A',
+            'ship_state': 'N/A',
+            'ship_postcode': '1000',
+            'ship_country': 'Bangladesh',
+            'value_a': str(order.id),
+            'value_b': payment_uuid,
+            'value_c': order.order_number,
+            'value_d': order.service.title[:50],
+        }
+        
+        # Generate hash for SSLCommerz authentication
+        hash_string = f"{store_password}{tran_id}{order.total_amount}BDT"
+        payment_data['hash'] = hashlib.sha512(hash_string.encode()).hexdigest()
+        
+        # Create SSLCommerz payment URL
+        sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+        
+        # Create form data for POST request
+        form_data = urllib.parse.urlencode(payment_data)
+        
+        result = {
+            'success': True,
+            'redirect_url': sslcommerz_url,
+            'sessionkey': tran_id,
+            'tran_id': tran_id,
+            'form_data': payment_data,
+            'store_id': store_id,
+            'store_password': store_password
+        }
         
         if result['success']:
             return Response({
