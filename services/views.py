@@ -256,49 +256,49 @@ class OrderDetailView(generics.RetrieveAPIView):
         return Order.objects.none()
 
 class OrderCreateView(generics.CreateAPIView):
-    """Create a new order"""
+    """Create a new order - minimal version for production"""
     serializer_class = OrderCreateSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        with transaction.atomic():
-            order = serializer.save(buyer=self.request.user)
-
-            # Ensure seller is set (don't rely on serializer implicitly doing it)
-            if not getattr(order, 'seller_id', None):
-                # assumes order.service is set by serializer validation
-                order.seller = order.service.seller
-                order.save(update_fields=['seller'])
-
-            # defensively build names to avoid None concatenation
-            buyer_name = (order.buyer.first_name or '').strip()
-            buyer_last = (order.buyer.last_name or '').strip()
-            buyer_full = (buyer_name + ' ' + buyer_last).strip() or order.buyer.email
-
-            def _notify_seller():
-                # only if we have a real seller
-                if order.seller_id:
-                    Notification.objects.create(
-                        recipient=order.seller,
-                        title="New Order Received",
-                        message=f"You have received a new order for '{order.service.title}' from {buyer_full}",
-                        notification_type="order_placed",
-                        order=order,
-                        service=order.service
-                    )
-
-            def _notify_buyer():
-                Notification.objects.create(
-                    recipient=order.buyer,
-                    title="Order Placed Successfully",
-                    message=f"Your order for '{order.service.title}' has been placed successfully. Order number: {order.order_number}",
-                    notification_type="order_placed",
-                    order=order,
-                    service=order.service
-                )
-
-            # fire after commit so foreign keys/IDs exist and nothing rolls back after notify
-            transaction.on_commit(lambda: (_notify_seller(), _notify_buyer()))
+    def create(self, request, *args, **kwargs):
+        try:
+            # Get basic data
+            service_id = request.data.get('service')
+            requirements = request.data.get('requirements', '')
+            special_instructions = request.data.get('special_instructions', '')
+            quantity = int(request.data.get('quantity', 1))
+            total_amount = float(request.data.get('total_amount', 0))
+            
+            # Get service
+            try:
+                service = Service.objects.get(id=service_id, is_active=True)
+            except Service.DoesNotExist:
+                return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Create order with minimal fields only
+            order = Order.objects.create(
+                service=service,
+                buyer=request.user,
+                seller=service.seller,
+                total_amount=total_amount,
+                requirements=requirements,
+                special_instructions=special_instructions
+            )
+            
+            return Response({
+                'id': str(order.id),
+                'service': str(order.service.id),
+                'requirements': order.requirements,
+                'special_instructions': order.special_instructions,
+                'total_amount': float(order.total_amount),
+                'status': order.status,
+                'created_at': order.placed_at.isoformat()
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response({
+                'error': f'Order creation failed: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class OrderUpdateView(generics.UpdateAPIView):
     """Update order status and notes"""
