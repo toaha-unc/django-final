@@ -1506,36 +1506,13 @@ def initiate_payment(request, order_id):
         # Debug: Print payment data for troubleshooting
         print(f"SSLCommerz Payment Data: {payment_data}")
         
-        # Create SSLCommerz payment URL
+        # Use SSLCommerz form submission approach instead of API
+        # This is more reliable and avoids the warning page issue
         sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
+        gateway_url = sslcommerz_url
         
-        # Make actual API call to SSLCommerz to get the GatewayPageURL
-        try:
-            print(f"Making SSLCommerz API call to: {sslcommerz_url}")
-            print(f"Payment data being sent: {payment_data}")
-            
-            response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
-            print(f"SSLCommerz API response status: {response.status_code}")
-            print(f"SSLCommerz API response content: {response.text}")
-            
-            if response.status_code == 200:
-                sslcommerz_response = response.json()
-                print(f"SSLCommerz API response JSON: {sslcommerz_response}")
-                
-                if sslcommerz_response.get('status') == 'SUCCESS':
-                    # Use GatewayPageURL for EasyCheckOut flow
-                    gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_response.get('redirectGatewayURL', sslcommerz_url))
-                    print(f"Using GatewayPageURL: {gateway_url}")
-                else:
-                    print(f"SSLCommerz API returned status: {sslcommerz_response.get('status')}")
-                    print(f"SSLCommerz API error: {sslcommerz_response.get('failedreason', 'Unknown error')}")
-                    gateway_url = sslcommerz_url
-            else:
-                print(f"SSLCommerz API call failed with status: {response.status_code}")
-                gateway_url = sslcommerz_url
-        except Exception as e:
-            print(f"SSLCommerz API call failed: {e}")
-            gateway_url = sslcommerz_url
+        print(f"Using SSLCommerz form submission approach")
+        print(f"Payment data: {payment_data}")
         
         # Ensure all form_data values are strings for JSON serialization
         # The payment_data already has the correct URLs from the initial setup
