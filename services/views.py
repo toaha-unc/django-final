@@ -1493,9 +1493,6 @@ def initiate_payment(request, order_id):
         # Create SSLCommerz payment URL
         sslcommerz_url = f"https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
         
-        # Ensure all form_data values are strings for JSON serialization
-        form_data_serializable = {k: str(v) for k, v in payment_data.items()}
-        
         # Make actual API call to SSLCommerz to get the GatewayPageURL
         try:
             response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
@@ -1510,6 +1507,9 @@ def initiate_payment(request, order_id):
         except Exception as e:
             print(f"SSLCommerz API call failed: {e}")
             gateway_url = sslcommerz_url
+        
+        # Ensure all form_data values are strings for JSON serialization
+        form_data_serializable = {k: str(v) for k, v in payment_data.items()}
         
         result = {
             'success': True,
