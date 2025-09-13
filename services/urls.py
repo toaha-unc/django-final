@@ -84,10 +84,10 @@ urlpatterns = [
     path('stats/', views.service_stats, name='service-stats'),
     path('order-stats/', views.order_stats, name='order-stats'),
     
-    # Payment URLs
-    path('payments/', views.PaymentListView.as_view(), name='payment-list'),
-    path('payments/<uuid:id>/', views.PaymentDetailView.as_view(), name='payment-detail'),
-    path('payments/methods/', views.PaymentMethodListView.as_view(), name='payment-method-list'),
+    # Payment URLs (temporarily disabled)
+    # path('payments/', views.PaymentListView.as_view(), name='payment-list'),
+    # path('payments/<uuid:id>/', views.PaymentDetailView.as_view(), name='payment-detail'),
+    # path('payments/methods/', views.PaymentMethodListView.as_view(), name='payment-method-list'),
     path('payments/initiate/<uuid:order_id>/', views.initiate_payment, name='initiate-payment'),
     path('payments/<uuid:payment_id>/methods/', views.get_sslcommerz_methods, name='sslcommerz-methods'),
     path('payments/sslcommerz/ipn/', views.sslcommerz_ipn, name='sslcommerz-ipn'),
