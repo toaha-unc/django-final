@@ -1499,7 +1499,8 @@ def initiate_payment(request, order_id):
             if response.status_code == 200:
                 sslcommerz_response = response.json()
                 if sslcommerz_response.get('status') == 'SUCCESS':
-                    gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_url)
+                    # Use redirectGatewayURL for proper payment flow
+                    gateway_url = sslcommerz_response.get('redirectGatewayURL', sslcommerz_response.get('GatewayPageURL', sslcommerz_url))
                 else:
                     gateway_url = sslcommerz_url
             else:
