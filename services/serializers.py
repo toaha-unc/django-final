@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences, PaymentMethod
+from .models import Category, Service, ServiceImage, Review, ReviewImage, ReviewHelpful, Order, OrderMessage, OrderFile, Notification, Recommendation, SellerEarnings, SellerAnalytics, SellerProfile, BuyerProfile, SavedService, BuyerAnalytics, BuyerPreferences
 from accounts.serializers import UserSerializer
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -828,12 +828,12 @@ class BuyerPreferencesUpdateSerializer(serializers.ModelSerializer):
 #         validated_data['buyer'] = self.context['request'].user
 #         return super().create(validated_data)
 
-class PaymentMethodSerializer(serializers.ModelSerializer):
-    """Serializer for PaymentMethod model"""
-    class Meta:
-        model = PaymentMethod
-        fields = ['id', 'name', 'gateway', 'is_active', 'configuration', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+# class PaymentMethodSerializer(serializers.ModelSerializer):
+#     """Serializer for PaymentMethod model"""
+#     class Meta:
+#         model = PaymentMethod
+#         fields = ['id', 'name', 'gateway', 'is_active', 'configuration', 'created_at', 'updated_at']
+#         read_only_fields = ['id', 'created_at', 'updated_at']
 
 class BuyerDashboardStatsSerializer(serializers.Serializer):
     """Serializer for buyer dashboard statistics"""
