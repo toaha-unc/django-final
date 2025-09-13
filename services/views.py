@@ -1510,7 +1510,8 @@ def initiate_payment(request, order_id):
                 'tran_id': result['sessionkey'],
                 'amount': float(order.total_amount),
                 'currency': 'BDT',
-                'order_number': order.order_number
+                'order_number': order.order_number,
+                'form_data': result['form_data']
             })
         else:
             return Response({
