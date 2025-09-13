@@ -1461,9 +1461,9 @@ def initiate_payment(request, order_id):
             'total_amount': str(order.total_amount),
             'currency': 'BDT',
             'tran_id': tran_id,
-            'success_url': 'https://django-final.vercel.app/api/payments/success/',
-            'fail_url': 'https://django-final.vercel.app/api/payments/failed/',
-            'cancel_url': 'https://django-final.vercel.app/api/payments/cancelled/',
+            'success_url': 'https://django-final.vercel.app/api/test-redirect/',
+            'fail_url': 'https://django-final.vercel.app/api/test-redirect/',
+            'cancel_url': 'https://django-final.vercel.app/api/test-redirect/',
             'emi_option': '0',
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
