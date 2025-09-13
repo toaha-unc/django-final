@@ -1478,6 +1478,7 @@ def initiate_payment(request, order_id):
             'shipping_method': 'NO',  # Digital services don't require shipping
             'product_name': order.service.title[:50],  # Product name for SSLCommerz
             'product_category': 'Digital Services',  # Product category for SSLCommerz
+            'product_profile': 'non-physical-goods',  # Product profile for digital services
             'value_a': str(order.id),
             'value_b': payment_uuid,
             'value_c': order.order_number,
