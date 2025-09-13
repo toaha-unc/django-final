@@ -1508,6 +1508,11 @@ def initiate_payment(request, order_id):
             print(f"SSLCommerz API call failed: {e}")
             gateway_url = sslcommerz_url
         
+        # Update payment_data with correct URLs for form_data
+        payment_data['success_url'] = 'http://localhost:3000/payment-success'
+        payment_data['fail_url'] = 'http://localhost:3000/payment-failed'
+        payment_data['cancel_url'] = 'http://localhost:3000/payment-cancelled'
+        
         # Ensure all form_data values are strings for JSON serialization
         form_data_serializable = {k: str(v) for k, v in payment_data.items()}
         
