@@ -806,6 +806,37 @@ def test_simple_endpoint(request):
         'status': 'ok'
     })
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_order_creation(request):
+    """Test order creation with minimal approach"""
+    try:
+        # Just try to get a service first
+        service = Service.objects.first()
+        if not service:
+            return Response({'error': 'No services found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Try to create a minimal order
+        order = Order.objects.create(
+            service=service,
+            buyer=request.user,
+            seller=service.seller,
+            total_amount=100.0,
+            requirements='test'
+        )
+        
+        return Response({
+            'message': 'Order created successfully',
+            'order_id': str(order.id),
+            'service_title': service.title
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': f'Order creation failed: {str(e)}',
+            'error_type': type(e).__name__
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def seller_dashboard_stats(request):
