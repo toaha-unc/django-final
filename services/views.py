@@ -1464,34 +1464,16 @@ def initiate_payment(request, order_id):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_sslcommerz_methods(request, payment_id):
-    """Get SSLCommerz payment methods"""
-    try:
-        payment = get_object_or_404(Payment, id=payment_id, buyer=request.user)
-        
-        # Initialize SSLCommerz service
-        sslcommerz = SSLCommerzService()
-        
-        # Get payment methods
-        methods = sslcommerz.get_payment_methods()
-        
-        return Response({
-            'payment_methods': methods,
-            'payment_id': payment.payment_id,
-            'amount': float(payment.amount),
-            'currency': payment.currency
-        })
-        
-    except Exception as e:
-        return Response({
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def get_sslcommerz_methods(request, payment_id):
+#     """Get SSLCommerz payment methods"""
+#     # Temporarily disabled due to Payment model issues
+#     pass
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def sslcommerz_ipn(request):
+# def sslcommerz_ipn(request):
     """SSLCommerz IPN (Instant Payment Notification) handler"""
     try:
         # Get payment data from SSLCommerz
@@ -1574,7 +1556,7 @@ def sslcommerz_ipn(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def payment_success(request):
+# def payment_success(request):
     """Handle successful payment redirect"""
     val_id = request.GET.get('val_id')
     tran_id = request.GET.get('tran_id')
@@ -1631,7 +1613,7 @@ def payment_success(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def payment_failed(request):
+# def payment_failed(request):
     """Handle failed payment redirect"""
     return Response({
         'success': False,
