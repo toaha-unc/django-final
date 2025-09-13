@@ -20,7 +20,7 @@ from .serializers import (
     BuyerProfileUpdateSerializer, SavedServiceSerializer, SavedServiceCreateSerializer,
     BuyerAnalyticsSerializer, BuyerPreferencesSerializer, BuyerPreferencesUpdateSerializer,
     BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
-    PaymentMethodSerializer
+    # PaymentMethodSerializer
 )
 # from .sslcommerz_service import SSLCommerzService
 
@@ -1383,13 +1383,13 @@ def buyer_activity_timeline(request):
 #     def get_queryset(self):
 #         return Payment.objects.filter(buyer=self.request.user).select_related('order', 'order__service')
 
-class PaymentMethodListView(generics.ListAPIView):
-    """List available payment methods"""
-    serializer_class = PaymentMethodSerializer
-    permission_classes = [AllowAny]
-    
-    def get_queryset(self):
-        return PaymentMethod.objects.filter(is_active=True)
+# class PaymentMethodListView(generics.ListAPIView):
+#     """List available payment methods"""
+#     serializer_class = PaymentMethodSerializer
+#     permission_classes = [AllowAny]
+#     
+#     def get_queryset(self):
+#         return PaymentMethod.objects.filter(is_active=True)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
