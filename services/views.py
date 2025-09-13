@@ -1511,15 +1511,27 @@ def initiate_payment(request, order_id):
         
         # Make actual API call to SSLCommerz to get the GatewayPageURL
         try:
+            print(f"Making SSLCommerz API call to: {sslcommerz_url}")
+            print(f"Payment data being sent: {payment_data}")
+            
             response = requests.post(sslcommerz_url, data=payment_data, timeout=30)
+            print(f"SSLCommerz API response status: {response.status_code}")
+            print(f"SSLCommerz API response content: {response.text}")
+            
             if response.status_code == 200:
                 sslcommerz_response = response.json()
+                print(f"SSLCommerz API response JSON: {sslcommerz_response}")
+                
                 if sslcommerz_response.get('status') == 'SUCCESS':
                     # Use GatewayPageURL for EasyCheckOut flow
                     gateway_url = sslcommerz_response.get('GatewayPageURL', sslcommerz_response.get('redirectGatewayURL', sslcommerz_url))
+                    print(f"Using GatewayPageURL: {gateway_url}")
                 else:
+                    print(f"SSLCommerz API returned status: {sslcommerz_response.get('status')}")
+                    print(f"SSLCommerz API error: {sslcommerz_response.get('failedreason', 'Unknown error')}")
                     gateway_url = sslcommerz_url
             else:
+                print(f"SSLCommerz API call failed with status: {response.status_code}")
                 gateway_url = sslcommerz_url
         except Exception as e:
             print(f"SSLCommerz API call failed: {e}")
