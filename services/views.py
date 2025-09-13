@@ -746,13 +746,20 @@ def order_stats(request):
         total=Sum('total_amount')
     )['total'] or 0
     
+    # Calculate net revenue (after platform fee)
+    from decimal import Decimal
+    platform_fee_rate = Decimal('0.10')  # 10% platform fee
+    total_platform_fees = total_spent * platform_fee_rate
+    net_revenue = total_spent - total_platform_fees
+    
     return Response({
         'total_orders': total_orders,
         'pending_orders': pending_orders,
         'in_progress_orders': in_progress_orders,
         'completed_orders': completed_orders,
         'cancelled_orders': cancelled_orders,
-        'total_spent': total_spent
+        'total_spent': total_spent,
+        'net_revenue': float(net_revenue)
     })
 
 @api_view(['GET'])
