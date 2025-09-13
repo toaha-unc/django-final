@@ -91,7 +91,7 @@ urlpatterns = [
     path('payments/initiate/<uuid:order_id>/', views.initiate_payment, name='initiate-payment'),
     # path('payments/<uuid:payment_id>/methods/', views.get_sslcommerz_methods, name='sslcommerz-methods'),
     # path('payments/sslcommerz/ipn/', views.sslcommerz_ipn, name='sslcommerz-ipn'),
-    # path('payments/success/', views.payment_success, name='payment-success'),
-    # path('payments/failed/', views.payment_failed, name='payment-failed'),
+    path('payments/success/', views.payment_success, name='payment-success'),
+    path('payments/failed/', views.payment_failed, name='payment-failed'),
     path('payments/cancelled/', views.payment_cancelled, name='payment-cancelled'),
 ]

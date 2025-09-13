@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Count, Sum
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.db import transaction
 import hashlib
@@ -1455,9 +1455,9 @@ def initiate_payment(request, order_id):
             'total_amount': str(order.total_amount),
             'currency': 'BDT',
             'tran_id': tran_id,
-            'success_url': 'http://localhost:3000/payment-success',
-            'fail_url': 'http://localhost:3000/payment-failed',
-            'cancel_url': 'http://localhost:3000/payment-cancelled',
+            'success_url': 'https://django-final.vercel.app/api/payments/success/',
+            'fail_url': 'https://django-final.vercel.app/api/payments/failed/',
+            'cancel_url': 'https://django-final.vercel.app/api/payments/cancelled/',
             'emi_option': '0',
             'multi_card_name': '',  # Force EasyCheckOut flow
             'cus_name': f"{order.buyer.first_name} {order.buyer.last_name}".strip() or order.buyer.email,
@@ -1511,9 +1511,9 @@ def initiate_payment(request, order_id):
             gateway_url = sslcommerz_url
         
         # Update payment_data with correct URLs for form_data
-        payment_data['success_url'] = 'http://localhost:3000/payment-success'
-        payment_data['fail_url'] = 'http://localhost:3000/payment-failed'
-        payment_data['cancel_url'] = 'http://localhost:3000/payment-cancelled'
+        payment_data['success_url'] = 'https://django-final.vercel.app/api/payments/success/'
+        payment_data['fail_url'] = 'https://django-final.vercel.app/api/payments/failed/'
+        payment_data['cancel_url'] = 'https://django-final.vercel.app/api/payments/cancelled/'
         
         # Ensure all form_data values are strings for JSON serialization
         form_data_serializable = {k: str(v) for k, v in payment_data.items()}
@@ -1544,11 +1544,45 @@ def initiate_payment(request, order_id):
             return Response({
                 'error': result['error']
             }, status=status.HTTP_400_BAD_REQUEST)
-            
-    except Exception as e:
-        return Response({
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def payment_success(request):
+    """Handle SSLCommerz payment success callback"""
+    if request.method == 'POST':
+        # SSLCommerz sends POST data with payment details
+        print(f"Payment success callback data: {request.data}")
+        print(f"Payment success callback query params: {request.query_params}")
+    
+    # Redirect to frontend success page
+    return redirect('http://localhost:3000/payment-success')
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def payment_failed(request):
+    """Handle SSLCommerz payment failed callback"""
+    if request.method == 'POST':
+        # SSLCommerz sends POST data with payment details
+        print(f"Payment failed callback data: {request.data}")
+        print(f"Payment failed callback query params: {request.query_params}")
+    
+    # Redirect to frontend failed page
+    return redirect('http://localhost:3000/payment-failed')
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def payment_cancelled(request):
+    """Handle SSLCommerz payment cancelled callback"""
+    if request.method == 'POST':
+        # SSLCommerz sends POST data with payment details
+        print(f"Payment cancelled callback data: {request.data}")
+        print(f"Payment cancelled callback query params: {request.query_params}")
+    
+    # Redirect to frontend failed page
+    return redirect('http://localhost:3000/payment-failed')
 
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
