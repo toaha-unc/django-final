@@ -760,83 +760,11 @@ class BuyerPreferences(models.Model):
         return f"Preferences for {self.buyer.email}"
 
 # class Payment(models.Model):
-    """Payment model for SSLCommerz integration"""
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('processing', 'Processing'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
-    ]
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
-    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
-    
-    # Payment details
-    payment_id = models.CharField(max_length=100, unique=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default='BDT')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    
-    # SSLCommerz specific fields
-    sslcommerz_session_key = models.CharField(max_length=100, blank=True)
-    sslcommerz_tran_id = models.CharField(max_length=100, blank=True)
-    sslcommerz_val_id = models.CharField(max_length=100, blank=True)
-    sslcommerz_bank_tran_id = models.CharField(max_length=100, blank=True)
-    sslcommerz_card_type = models.CharField(max_length=50, blank=True)
-    sslcommerz_card_no = models.CharField(max_length=50, blank=True)
-    sslcommerz_card_issuer = models.CharField(max_length=100, blank=True)
-    sslcommerz_card_brand = models.CharField(max_length=50, blank=True)
-    sslcommerz_card_issuer_country = models.CharField(max_length=100, blank=True)
-    sslcommerz_card_issuer_country_code = models.CharField(max_length=10, blank=True)
-    sslcommerz_currency_type = models.CharField(max_length=10, blank=True)
-    sslcommerz_currency_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    sslcommerz_currency_rate = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
-    sslcommerz_base_fair = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    sslcommerz_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    sslcommerz_risk_level = models.CharField(max_length=20, blank=True)
-    sslcommerz_risk_title = models.CharField(max_length=100, blank=True)
-    
-    # Payment gateway response
-    gateway_response = models.JSONField(default=dict, blank=True)
-    failure_reason = models.TextField(blank=True)
-    
-    # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"Payment {self.payment_id} - {self.order.order_number} - {self.status}"
-    
-    def save(self, *args, **kwargs):
-        # Generate payment ID if not exists
-        if not self.payment_id:
-            self.payment_id = f"PAY-{self.id.hex[:8].upper()}"
-        super().save(*args, **kwargs)
-    
-    def is_successful(self):
-        return self.status == 'completed'
-    
-    def can_be_refunded(self):
-        return self.status == 'completed'
+#     """Payment model for SSLCommerz integration"""
+#     # Temporarily disabled due to database schema issues
+#     pass
 
 # class PaymentMethod(models.Model):
-    """Payment method configuration"""
-    name = models.CharField(max_length=100)
-    gateway = models.CharField(max_length=50)  # sslcommerz, etc.
-    is_active = models.BooleanField(default=True)
-    configuration = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['name']
-    
-    def __str__(self):
-        return f"{self.name} ({self.gateway})"
+#     """Payment method configuration"""
+#     # Temporarily disabled due to database schema issues
+#     pass
