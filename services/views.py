@@ -798,6 +798,15 @@ def test_cors_endpoint(request):
     })
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+def test_simple_endpoint(request):
+    """Simple test endpoint without any models"""
+    return Response({
+        'message': 'Simple test successful',
+        'status': 'ok'
+    })
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def seller_dashboard_stats(request):
     """Get comprehensive seller dashboard statistics"""

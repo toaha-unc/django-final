@@ -77,6 +77,7 @@ urlpatterns = [
     # Test endpoints
     path('test-simple/', views.test_simple_endpoint, name='test-simple'),
     path('test-cors/', views.test_cors_endpoint, name='test-cors'),
+    path('test-simple/', views.test_simple_endpoint, name='test-simple'),
     
     # Statistics
     path('stats/', views.service_stats, name='service-stats'),
