@@ -22,7 +22,7 @@ from .serializers import (
     BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
     PaymentSerializer, PaymentCreateSerializer, PaymentMethodSerializer
 )
-from .sslcommerz_service import SSLCommerzService
+# from .sslcommerz_service import SSLCommerzService
 
 class CategoryListView(generics.ListAPIView):
     """List all categories"""
