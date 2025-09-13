@@ -1550,39 +1550,51 @@ def initiate_payment(request, order_id):
 @permission_classes([AllowAny])
 def payment_success(request):
     """Handle SSLCommerz payment success callback"""
-    if request.method == 'POST':
-        # SSLCommerz sends POST data with payment details
-        print(f"Payment success callback data: {request.data}")
-        print(f"Payment success callback query params: {request.query_params}")
-    
-    # Redirect to frontend success page
-    return redirect('http://localhost:3000/payment-success')
+    try:
+        if request.method == 'POST':
+            # SSLCommerz sends POST data with payment details
+            print(f"Payment success callback data: {request.data}")
+            print(f"Payment success callback query params: {request.query_params}")
+        
+        # Redirect to frontend success page
+        return redirect('http://localhost:3000/payment-success')
+    except Exception as e:
+        print(f"Payment success error: {e}")
+        return redirect('http://localhost:3000/payment-success')
 
 
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def payment_failed(request):
     """Handle SSLCommerz payment failed callback"""
-    if request.method == 'POST':
-        # SSLCommerz sends POST data with payment details
-        print(f"Payment failed callback data: {request.data}")
-        print(f"Payment failed callback query params: {request.query_params}")
-    
-    # Redirect to frontend failed page
-    return redirect('http://localhost:3000/payment-failed')
+    try:
+        if request.method == 'POST':
+            # SSLCommerz sends POST data with payment details
+            print(f"Payment failed callback data: {request.data}")
+            print(f"Payment failed callback query params: {request.query_params}")
+        
+        # Redirect to frontend failed page
+        return redirect('http://localhost:3000/payment-failed')
+    except Exception as e:
+        print(f"Payment failed error: {e}")
+        return redirect('http://localhost:3000/payment-failed')
 
 
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def payment_cancelled(request):
     """Handle SSLCommerz payment cancelled callback"""
-    if request.method == 'POST':
-        # SSLCommerz sends POST data with payment details
-        print(f"Payment cancelled callback data: {request.data}")
-        print(f"Payment cancelled callback query params: {request.query_params}")
-    
-    # Redirect to frontend failed page
-    return redirect('http://localhost:3000/payment-failed')
+    try:
+        if request.method == 'POST':
+            # SSLCommerz sends POST data with payment details
+            print(f"Payment cancelled callback data: {request.data}")
+            print(f"Payment cancelled callback query params: {request.query_params}")
+        
+        # Redirect to frontend failed page
+        return redirect('http://localhost:3000/payment-failed')
+    except Exception as e:
+        print(f"Payment cancelled error: {e}")
+        return redirect('http://localhost:3000/payment-failed')
 
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
