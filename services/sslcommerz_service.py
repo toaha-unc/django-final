@@ -14,7 +14,7 @@ class SSLCommerzService:
         # Production credentials
         self.store_id = 'ts68c1700491a82'
         self.store_password = 'ts68c1700491a82@ssl'
-        self.base_url = 'https://securepay.sslcommerz.com'
+        self.base_url = 'https://sandbox.sslcommerz.com'
         self.success_url = 'https://react-final.vercel.app/payment-success'
         self.fail_url = 'https://react-final.vercel.app/payment-failed'
         self.cancel_url = 'https://react-final.vercel.app/payment-cancelled'

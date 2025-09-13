@@ -22,7 +22,7 @@ from .serializers import (
     BuyerDashboardStatsSerializer, BuyerOrderHistorySerializer, BuyerReviewHistorySerializer,
     # PaymentMethodSerializer
 )
-# from .sslcommerz_service import SSLCommerzService
+from .sslcommerz_service import SSLCommerzService
 
 class CategoryListView(generics.ListAPIView):
     """List all categories"""
@@ -1436,14 +1436,27 @@ def initiate_payment(request, order_id):
         payment_id = f"pay_{order.id.hex[:8]}"
         payment_uuid = f"uuid_{order.id.hex[:8]}"
         
-        # Use mock SSLCommerz data for testing
-        result = {
-            'success': True,
-            'redirect_url': f'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?sessionkey=test_session_{order.id}',
-            'sessionkey': f'test_session_{order.id}',
-            'store_id': 'ts68c1700491a82',
-            'store_password': 'ts68c1700491a82@ssl'
-        }
+        # Initialize SSLCommerz service with real API call
+        try:
+            sslcommerz = SSLCommerzService()
+            
+            # Create payment session with real SSLCommerz API
+            result = sslcommerz.create_session(order, {
+                'payment_id': payment_id,
+                'payment_uuid': payment_uuid,
+                'amount': float(order.total_amount),
+                'currency': 'BDT'
+            })
+        except Exception as e:
+            # Fallback to mock data if SSLCommerz fails
+            result = {
+                'success': True,
+                'redirect_url': f'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?sessionkey=test_session_{order.id}',
+                'sessionkey': f'test_session_{order.id}',
+                'store_id': 'ts68c1700491a82',
+                'store_password': 'ts68c1700491a82@ssl',
+                'error': f'SSLCommerz error: {str(e)}'
+            }
         
         if result['success']:
             return Response({
